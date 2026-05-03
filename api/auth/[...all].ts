@@ -1,23 +1,18 @@
 /**
  * Vercel Serverless — Better Auth catch-all handler
  * Handles all /api/auth/* routes
+ *
+ * IMPORTANT: bodyParser must be disabled so Better Auth can parse the body itself
  */
 
-import type { VercelRequest, VercelResponse } from "@vercel/node"
 import { toNodeHandler } from "better-auth/node"
+import { auth } from "../../src/api/auth-server"
 
-// Lazy import to avoid cold-start issues with pg pool
-let _handler: ReturnType<typeof toNodeHandler> | null = null
-
-async function getHandler() {
-  if (!_handler) {
-    const { auth } = await import("../../src/api/auth-server")
-    _handler = toNodeHandler(auth)
-  }
-  return _handler
+// Disable Vercel's automatic body parsing — Better Auth handles this itself
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const h = await getHandler()
-  return h(req as never, res as never)
-}
+export default toNodeHandler(auth.handler)
