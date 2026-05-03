@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #FAF8F5;
+  color: #1C1917;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Lora', Georgia, serif;
+}
+
+.font-mono, [data-mono] {
+  font-family: 'JetBrains Mono', monospace;
+}
