@@ -18,9 +18,8 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 })
 
-const baseURL = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : process.env.BETTER_AUTH_URL || "http://localhost:5173"
+const baseURL = process.env.BETTER_AUTH_URL 
+  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:5173")
 
 export const auth = betterAuth({
   database: pool,
