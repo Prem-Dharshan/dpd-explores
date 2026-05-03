@@ -9,19 +9,6 @@ import { extractPlaceIdFromUrl } from "@/lib/csv-parser"
 
 const GMAPS_API_KEY = import.meta.env.VITE_GMAPS_API_KEY
 
-const FIELDS = [
-  "displayName",
-  "formattedAddress",
-  "location",
-  "internationalPhoneNumber",
-  "regularOpeningHours",
-  "priceLevel",
-  "photos",
-  "primaryTypeDisplayName",
-  "addressComponents",
-  "websiteUri",
-].join(",")
-
 /**
  * Convert PlacesAPI response to our Place format
  */

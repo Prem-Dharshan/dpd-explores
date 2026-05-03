@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { getPhotoUrl } from "@/lib/gmaps"
 import {
   ArrowLeft, MapPin, Phone, Globe, Clock, ChevronLeft, ChevronRight,
-  Edit, CheckCircle, Bookmark, Star, Plus, X
+  CheckCircle, Bookmark, Star, Plus, X
 } from "lucide-react"
 import type { Place, Review, Rating } from "@/types"
 
@@ -65,7 +65,6 @@ export function PlaceDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [showAddReview, setShowAddReview] = useState(false)
-  const [editMode, setEditMode] = useState(false)
 
   // Review form state
   const [reviewForm, setReviewForm] = useState({

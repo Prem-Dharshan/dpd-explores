@@ -24,7 +24,7 @@ export function parseCSV(file: File): Promise<RawPlace[]> {
       skipEmptyLines: true,
       complete: (results) => {
         try {
-          const places: RawPlace[] = results.data
+          const places: RawPlace[] = (results.data as CSVRow[])
             .map((row: CSVRow) => ({
               name: row.Title?.trim() || "",
               notes: row.Note?.trim() || undefined,

@@ -4,14 +4,15 @@
  * This file serves as a reference for accessing session data
  */
 
-import { createContext, useContext, ReactNode } from "react"
-import { useSession as useBetterAuthSession } from "@/lib/auth-client"
+import { createContext, useContext } from "react"
+import type { ReactNode } from "react"
+import { client } from "@/lib/auth-client"
 
 interface User {
   id: string
   email: string
   name?: string
-  image?: string
+  image?: string | null
 }
 
 interface SessionContextType {
@@ -24,7 +25,7 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const { data: sessionData, isPending, error } = useBetterAuthSession()
+  const { data: sessionData, isPending, error } = client.useSession()
 
   const value: SessionContextType = {
     user: sessionData?.user || null,
