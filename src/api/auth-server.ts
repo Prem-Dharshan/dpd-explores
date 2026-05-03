@@ -23,6 +23,9 @@ const baseURL = process.env.BETTER_AUTH_URL
 
 export const auth = betterAuth({
   database: pool,
+  emailAndPassword: {
+    enabled: true,
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
