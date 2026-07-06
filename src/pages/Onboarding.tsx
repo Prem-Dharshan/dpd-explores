@@ -19,6 +19,10 @@ export function Onboarding() {
   const [saved, setSaved] = useState(0)
 
   const handleUploadSuccess = async (places: Place[]) => {
+    if (!user) {
+      setError("Your session expired. Please sign in again.")
+      return
+    }
     try {
       setIsSaving(true)
       setError(null)
@@ -28,7 +32,7 @@ export function Onboarding() {
       for (let i = 0; i < places.length; i += 50) {
         const batch = places.slice(i, i + 50).map((p) => ({
           ...p,
-          user_id: user!.id,
+          user_id: user.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }))
@@ -38,11 +42,19 @@ export function Onboarding() {
         setSaved(count)
       }
 
+      // User now has data — no need to keep them out of the dashboard
+      localStorage.removeItem("dpd_onboarding_skipped")
       navigate("/flashcard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save places")
       setIsSaving(false)
     }
+  }
+
+  const handleSkip = () => {
+    // Remember the skip so the dashboard doesn't redirect straight back here
+    localStorage.setItem("dpd_onboarding_skipped", "1")
+    navigate("/")
   }
 
   return (
@@ -125,7 +137,7 @@ export function Onboarding() {
         {/* Skip */}
         <div className="text-center mt-8">
           <button
-            onClick={() => navigate("/")}
+            onClick={handleSkip}
             className="text-[13px] text-ink-secondary hover:text-ink transition-colors flex items-center gap-1 mx-auto"
           >
             Skip for now

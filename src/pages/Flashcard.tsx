@@ -85,6 +85,7 @@ export function Flashcard() {
   const [showHeld, setShowHeld] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [editMode, setEditMode] = useState(false)
   const [editedTags, setEditedTags] = useState<Partial<Place>>({})
   const [addingField, setAddingField] = useState<TagField | null>(null)
@@ -187,21 +188,39 @@ export function Flashcard() {
   }
 
   const handleApprove = async () => {
-    if (!currentPlace || !user) return
+    if (!currentPlace || !user || isSaving) return
     setIsSaving(true)
-    await supabase.from("places").update(buildSavePayload()).eq("id", currentPlace.id).eq("user_id", user.id)
-    advance()
+    setSaveError(null)
+    const { error } = await supabase.from("places").update(buildSavePayload()).eq("id", currentPlace.id).eq("user_id", user.id)
     setIsSaving(false)
+    if (error) {
+      setSaveError(`Couldn't save "${currentPlace.name}": ${error.message}`)
+      return
+    }
+    advance()
     setEditMode(false)
   }
 
   const handleHold = async () => {
-    if (!currentPlace || !user) return
-    await supabase.from("places").update({ held_for_review: true, updated_at: new Date().toISOString() }).eq("id", currentPlace.id).eq("user_id", user.id)
+    if (!currentPlace || !user || isSaving) return
+    setSaveError(null)
+    const { error } = await supabase.from("places").update({ held_for_review: true, updated_at: new Date().toISOString() }).eq("id", currentPlace.id).eq("user_id", user.id)
+    if (error) {
+      setSaveError(`Couldn't hold "${currentPlace.name}": ${error.message}`)
+      return
+    }
     const held = { ...currentPlace, held_for_review: true }
-    setHeldQueue((prev) => [...prev, held])
-    if (!showHeld) setQueue((prev) => prev.filter((p) => p.id !== currentPlace.id))
-    advance()
+    if (showHeld) {
+      // Move it to the back of the held queue
+      setHeldQueue((prev) => [...prev.filter((p) => p.id !== currentPlace.id), held])
+    } else {
+      // Removing it from the queue slides the next card into the current index,
+      // so don't advance() here — that would skip a card
+      setQueue((prev) => prev.filter((p) => p.id !== currentPlace.id))
+      setHeldQueue((prev) => [...prev, held])
+    }
+    setEditMode(false)
+    setEditedTags({})
   }
 
   const advance = () => {
@@ -216,6 +235,20 @@ export function Flashcard() {
       navigate("/")
     }
   }
+
+  // Keyboard shortcuts (advertised in the footer hints)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return
+      if (!currentPlace) return
+      if (e.key === "ArrowRight") handleApprove()
+      else if (e.key === "e" && !editMode) setEditMode(true)
+      else if (e.key === "h") handleHold()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  })
 
   const removeTag = (field: TagField, value: string) => {
     setEditedTags((prev) => ({
@@ -363,6 +396,13 @@ export function Flashcard() {
 
         {/* Right: AI tags + actions */}
         <div className="flex-1 flex flex-col gap-5 mt-4 lg:mt-0">
+          {/* Save error */}
+          {saveError && (
+            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-[13px] text-red-600">
+              {saveError}
+            </div>
+          )}
+
           {/* AI Loading */}
           {currentPlace.aiLoading && (
             <div className="flex items-center gap-2 text-[13px] text-ink-secondary">

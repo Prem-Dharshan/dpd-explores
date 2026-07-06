@@ -49,6 +49,7 @@ function mapPlacesAPIToPlace(
     gmaps_url: raw.gmaps_url,
     user_id: userId,
     source: "csv" as const,
+    place_id: (api.id as string | undefined) || extractPlaceIdFromUrl(raw.gmaps_url || "") || undefined,
     address: api.formattedAddress as string | undefined,
     city,
     area,

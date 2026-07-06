@@ -31,7 +31,7 @@ function PlaceholderPhoto({ name }: { name: string }) {
   )
 }
 
-function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean }) {
+function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean | null }) {
   const photo = place.photo_references?.[0]
   return (
     <Link
@@ -114,6 +114,7 @@ export function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [places, setPlaces] = useState<Place[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [moodInput, setMoodInput] = useState("")
   const [moodLoading, setMoodLoading] = useState(false)
@@ -145,16 +146,29 @@ export function Dashboard() {
     if (!user) return
     ;(async () => {
       setIsLoading(true)
-      const { data } = await supabase
+      setLoadError(null)
+      const { data, error } = await supabase
         .from("places")
         .select("*")
         .eq("user_id", user.id)
         .eq("active", true)
         .order("created_at", { ascending: false })
+      if (error) {
+        setLoadError(error.message)
+        setPlaces([])
+        setIsLoading(false)
+        return
+      }
+      // First-time users (no places yet) go straight to onboarding,
+      // unless they explicitly skipped it before
+      if ((data || []).length === 0 && !localStorage.getItem("dpd_onboarding_skipped")) {
+        navigate("/onboarding", { replace: true })
+        return
+      }
       setPlaces(data || [])
       setIsLoading(false)
     })()
-  }, [user])
+  }, [user, navigate])
 
   // Filter + sort
   const filtered = useCallback(() => {
@@ -182,8 +196,8 @@ export function Dashboard() {
     if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
     else if (sortBy === "recently_visited") result.sort((a, b) => (b.last_visited_at || "").localeCompare(a.last_visited_at || ""))
     else if (sortBy === "wishlist_priority") {
-      const order = { high: 0, medium: 1, low: 2 }
-      result.sort((a, b) => order[a.wishlist_priority] - order[b.wishlist_priority])
+      const order: Record<string, number> = { high: 0, medium: 1, low: 2 }
+      result.sort((a, b) => (order[a.wishlist_priority] ?? 3) - (order[b.wishlist_priority] ?? 3))
     }
     else if (sortBy === "budget_low_high") result.sort((a, b) => (a.budget_per_person_max || 9999) - (b.budget_per_person_max || 9999))
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
@@ -466,6 +480,13 @@ export function Dashboard() {
               </div>
             </div>
 
+            {/* Load error */}
+            {loadError && (
+              <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-[14px] text-red-600">
+                Couldn't load your places: {loadError}
+              </div>
+            )}
+
             {/* Cards */}
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -499,7 +520,7 @@ export function Dashboard() {
                     highlighted={
                       highlight
                         ? highlight.ids.includes(place.id)
-                        : true
+                        : null
                     }
                   />
                 ))}

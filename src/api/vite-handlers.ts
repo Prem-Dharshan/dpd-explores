@@ -29,6 +29,7 @@ function json(res: ServerResponse, status: number, data: unknown) {
 }
 
 const FIELDS = [
+  "id",
   "displayName",
   "formattedAddress",
   "location",

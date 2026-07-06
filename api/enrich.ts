@@ -6,6 +6,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
 
 const FIELDS = [
+  "id",
   "displayName",
   "formattedAddress",
   "location",

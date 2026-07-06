@@ -3,7 +3,7 @@
  * Google OAuth + Email/Password sign in and sign up
  */
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { signIn, signUp } from "@/lib/auth-client"
 import { useSession } from "@/hooks/useSession"
@@ -14,17 +14,21 @@ export function Login() {
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  // Where to go once the session is established ("/onboarding" for new sign-ups)
+  const [postAuthTarget, setPostAuthTarget] = useState<string | null>(null)
 
-  // If already authenticated, redirect to dashboard
-  if (isAuthenticated && !sessionLoading) {
-    navigate("/", { replace: true })
-    return null
-  }
+  // Navigate only once the session actually exists, so ProtectedRoute
+  // doesn't bounce us back here while the session store is still updating
+  useEffect(() => {
+    if (isAuthenticated && !sessionLoading) {
+      navigate(postAuthTarget ?? "/", { replace: true })
+    }
+  }, [isAuthenticated, sessionLoading, postAuthTarget, navigate])
 
   const handleGoogleSignIn = async () => {
     try {
@@ -64,17 +68,17 @@ export function Login() {
           email,
           password,
           name,
-          callbackURL: "/",
         })
         if (error) throw new Error(error.message)
-        // Auto sign-in is default in Better Auth, redirect handled by reactivity
+        // Better Auth auto signs in after sign up — send new users to onboarding
+        setPostAuthTarget("/onboarding")
       } else {
         const { error } = await signIn.email({
           email,
           password,
         })
         if (error) throw new Error(error.message)
-        // Success redirect handled by reactivity
+        setPostAuthTarget("/")
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed")
