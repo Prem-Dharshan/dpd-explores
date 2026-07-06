@@ -32,3 +32,6 @@ yarn.lock
 
 better-auth_migrations
 schema.sql
+
+.vercel
+.env*
