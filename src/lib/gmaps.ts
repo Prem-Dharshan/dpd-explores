@@ -114,6 +114,16 @@ export async function searchPlace(
 }
 
 /**
+ * Best available Google Maps link for a place:
+ * saved Takeout URL > place_id deep link > name search
+ */
+export function getGmapsUrl(place: { gmaps_url?: string; place_id?: string; name: string }): string {
+  if (place.gmaps_url) return place.gmaps_url
+  if (place.place_id) return `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}`
+}
+
+/**
  * Construct photo URL from Places API photo reference
  * Can be called from client-side (rendering only)
  */

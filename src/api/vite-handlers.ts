@@ -106,7 +106,7 @@ export function registerApiHandlers(server: ViteDevServer) {
               "X-Goog-FieldMask": FIELDS,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ textQuery: body.name }),
+            body: JSON.stringify({ textQuery: body.name, regionCode: "IN" }),
           })
           if (r.ok) {
             const d = await r.json() as { places?: unknown[] }

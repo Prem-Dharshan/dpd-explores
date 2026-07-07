@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           "X-Goog-FieldMask": FIELDS,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ textQuery: name }),
+        body: JSON.stringify({ textQuery: name, regionCode: "IN" }),
       })
       if (r.ok) {
         const d = await r.json() as { places?: unknown[] }

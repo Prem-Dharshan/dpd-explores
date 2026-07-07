@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
 import { supabase } from "@/lib/supabase"
-import { getPhotoUrl } from "@/lib/gmaps"
+import { getPhotoUrl, getGmapsUrl } from "@/lib/gmaps"
 import { getMoodRecommendation } from "@/lib/groq"
 import {
   MapPin, Search, Sparkles, SlidersHorizontal, CheckCircle, Bookmark,
@@ -28,6 +28,15 @@ function PlaceholderPhoto({ name }: { name: string }) {
         {name.charAt(0).toUpperCase()}
       </span>
     </div>
+  )
+}
+
+function GmapsPinIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+      <circle cx="12" cy="9" r="2.5" fill="#fff" />
+    </svg>
   )
 }
 
@@ -53,6 +62,18 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
         ) : (
           <PlaceholderPhoto name={place.name} />
         )}
+        {/* Open in Google Maps */}
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            window.open(getGmapsUrl(place), "_blank", "noopener")
+          }}
+          title="Open in Google Maps"
+          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110"
+        >
+          <GmapsPinIcon className="w-[18px] h-[18px]" />
+        </button>
         {/* Badge */}
         <div className="absolute top-2.5 right-2.5">
           {place.visited ? (
