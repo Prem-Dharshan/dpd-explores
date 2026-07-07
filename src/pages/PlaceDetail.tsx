@@ -8,6 +8,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { supabase } from "@/lib/supabase"
 import { getPhotoUrl, getGmapsUrl } from "@/lib/gmaps"
+import { GmapsIcon } from "@/components/GmapsIcon"
 import {
   ArrowLeft, MapPin, Phone, Globe, Clock, ChevronLeft, ChevronRight,
   CheckCircle, Bookmark, Star, Plus, X
@@ -259,10 +260,7 @@ export function PlaceDetail() {
               </div>
             )}
             <div className="flex items-center gap-2 text-ink-secondary">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
-                <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                <circle cx="12" cy="9" r="2.5" fill="#fff" />
-              </svg>
+              <GmapsIcon className="h-4 shrink-0" />
               <a
                 href={getGmapsUrl(place)}
                 target="_blank"
