@@ -9,9 +9,10 @@ import { useSession } from "@/hooks/useSession"
 import { supabase } from "@/lib/supabase"
 import { getPhotoUrl, getGmapsUrl } from "@/lib/gmaps"
 import { GmapsIcon } from "@/components/GmapsIcon"
+import { PlaceForm } from "@/components/PlaceForm"
 import {
   ArrowLeft, MapPin, Phone, Globe, Clock, ChevronLeft, ChevronRight,
-  CheckCircle, Bookmark, Star, Plus, X
+  CheckCircle, Bookmark, Star, Plus, X, Pencil
 } from "lucide-react"
 import type { Place, Review, Rating } from "@/types"
 
@@ -66,6 +67,9 @@ export function PlaceDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [showAddReview, setShowAddReview] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   // Review form state
   const [reviewForm, setReviewForm] = useState({
@@ -129,6 +133,27 @@ export function PlaceDetail() {
     }
   }
 
+  const saveEdit = async (values: Partial<Place>) => {
+    if (!user || !place) return
+    setSavingEdit(true)
+    setEditError(null)
+    // Strip fields that must never be written from the form
+    const { id: _id, user_id: _uid, created_at: _created, ...payload } = values
+    void _id; void _uid; void _created
+    const { error } = await supabase
+      .from("places")
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq("id", place.id)
+      .eq("user_id", user.id)
+    setSavingEdit(false)
+    if (error) {
+      setEditError(error.message)
+      return
+    }
+    setPlace({ ...place, ...values })
+    setEditMode(false)
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-base">
@@ -171,6 +196,17 @@ export function PlaceDetail() {
         </button>
         <h2 className="font-display text-[18px] text-ink truncate max-w-xs">{place.name}</h2>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setEditMode(!editMode); setEditError(null) }}
+            className={`flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-md border transition-colors ${
+              editMode
+                ? "border-accent text-accent"
+                : "border-border text-ink-secondary hover:border-border-strong hover:text-ink"
+            }`}
+          >
+            <Pencil className="w-4 h-4" />
+            <span className="hidden sm:inline">{editMode ? "Cancel edit" : "Edit"}</span>
+          </button>
           <button
             onClick={() => setShowAddReview(true)}
             className="flex items-center gap-1.5 text-[13px] font-medium bg-accent text-surface px-3 py-1.5 rounded-md hover:bg-accent-hover transition-colors"
@@ -230,7 +266,26 @@ export function PlaceDetail() {
           </div>
         </div>
 
+        {/* Edit mode */}
+        {editMode && (
+          <div className="space-y-4">
+            {editError && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-4 text-[14px] text-red-600">
+                {editError}
+              </div>
+            )}
+            <PlaceForm
+              initial={place}
+              onSubmit={saveEdit}
+              submitLabel="Save changes"
+              isSaving={savingEdit}
+              onCancel={() => { setEditMode(false); setEditError(null) }}
+            />
+          </div>
+        )}
+
         {/* Info */}
+        {!editMode && (
         <div className="space-y-4">
           <div>
             <h1 className="font-display text-[32px] text-ink leading-tight">{place.name}</h1>
@@ -290,9 +345,10 @@ export function PlaceDetail() {
             )}
           </div>
         </div>
+        )}
 
         {/* Tags */}
-        {allTags.length > 0 && (
+        {!editMode && allTags.length > 0 && (
           <div className="bg-surface border border-border rounded-xl p-5 shadow-card">
             <h3 className="text-[12px] uppercase tracking-[0.06em] text-ink-secondary font-medium mb-3">Your Tags</h3>
             <div className="flex flex-wrap gap-1.5">
@@ -306,7 +362,7 @@ export function PlaceDetail() {
         )}
 
         {/* Dishes */}
-        {(place.must_try || place.signature_dishes.length > 0) && (
+        {!editMode && (place.must_try || place.signature_dishes.length > 0) && (
           <div className="bg-surface border border-border rounded-xl p-5 shadow-card">
             <h3 className="text-[12px] uppercase tracking-[0.06em] text-ink-secondary font-medium mb-3">Dishes</h3>
             {place.must_try && (
@@ -327,7 +383,7 @@ export function PlaceDetail() {
         )}
 
         {/* Notes */}
-        {(place.notes || place.comment) && (
+        {!editMode && (place.notes || place.comment) && (
           <div className="bg-surface border border-border rounded-xl p-5 shadow-card">
             <h3 className="text-[12px] uppercase tracking-[0.06em] text-ink-secondary font-medium mb-2">Your Notes</h3>
             {place.notes && <p className="text-[14px] text-ink">{place.notes}</p>}

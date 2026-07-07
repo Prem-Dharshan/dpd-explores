@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         model: "moonshotai/kimi-k2-instruct",
         messages: [{
           role: "user",
-          content: `You are a personal restaurant recommender in India. Based on the user's mood, return the top 5 place IDs that best match.
+          content: `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
 Return ONLY a JSON array of place IDs: ["uuid1", "uuid2", ...]
 Do not explain. Only return the array.
 

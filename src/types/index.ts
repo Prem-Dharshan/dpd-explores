@@ -28,17 +28,8 @@ export interface Place {
   lat?: number
   lng?: number
 
-  // Classification
-  place_type?:
-    | "restaurant"
-    | "cafe"
-    | "bar"
-    | "bakery"
-    | "dhaba"
-    | "food_truck"
-    | "fine_dining"
-    | "explore_spot"
-    | "other"
+  // Classification — see PLACE_TYPES in lib/constants.ts (food + experiences)
+  place_type?: string
   cuisine_type?: string
   cuisine_tags: string[]
   diet_type: "veg" | "nonveg" | "both"
@@ -119,16 +110,7 @@ export interface PlaceCategorization {
   cuisine_tags: string[]
   diet_type: "veg" | "nonveg" | "both"
   alcohol_served: "yes" | "no" | "byob" | "unknown"
-  place_type:
-    | "restaurant"
-    | "cafe"
-    | "bar"
-    | "bakery"
-    | "dhaba"
-    | "food_truck"
-    | "fine_dining"
-    | "explore_spot"
-    | "other"
+  place_type: string
   occasion: string[]
   best_for_time: string[]
   ambience: string[]

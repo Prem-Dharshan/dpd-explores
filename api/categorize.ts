@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { name, address, place_type, notes, comment } = req.body || {}
   if (!name) return res.status(400).json({ error: "name is required" })
 
-  const prompt = `You are a food and places expert in India, especially familiar with Chennai, Mumbai, Delhi, Bangalore.
+  const prompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
 
 Given this place:
 Name: ${name}
@@ -29,22 +29,22 @@ User Comment: ${comment || "None"}
 
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {
-  "cuisine_type": "string",
+  "cuisine_type": "string (empty for non-food places)",
   "cuisine_tags": ["string"],
   "diet_type": "veg | nonveg | both",
   "alcohol_served": "yes | no | byob | unknown",
-  "place_type": "restaurant | cafe | bar | bakery | dhaba | food_truck | fine_dining | explore_spot | other",
+  "place_type": "restaurant | cafe | bar | bakery | dessert | dhaba | food_truck | fine_dining | adventure | gaming | nature | beach | trek | park | museum | arts_culture | heritage | viewpoint | nightlife | shopping | wellness | stay | explore_spot | other",
   "occasion": ["date", "family", "friends", "solo", "business", "celebration", "quick_bite"],
   "best_for_time": ["breakfast", "brunch", "lunch", "snack", "dinner", "late_night", "early_morning"],
   "ambience": ["rooftop", "cozy", "loud", "quiet", "outdoor", "live_music", "indoor"],
   "vibe": ["romantic", "lively", "chill", "instagrammable", "old_school", "hidden_gem", "touristy"],
-  "signature_dishes": ["string"],
-  "must_try": "string or empty",
+  "signature_dishes": ["string (empty for non-food places)"],
+  "must_try": "string or empty (for experiences: the highlight activity)",
   "wishlist_priority": "high | medium | low",
   "confidence": 0.0
 }
 
-Only include values you are confident about. Use empty arrays for unknown fields.`
+For non-food places (treks, museums, arcades...) leave cuisine fields and signature_dishes empty and pick the right place_type. Only include values you are confident about. Use empty arrays for unknown fields.`
 
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {

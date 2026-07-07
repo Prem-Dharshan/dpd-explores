@@ -13,8 +13,9 @@ import { GmapsIcon } from "@/components/GmapsIcon"
 import { getMoodRecommendation } from "@/lib/groq"
 import {
   MapPin, Search, Sparkles, SlidersHorizontal, CheckCircle, Bookmark,
-  Star, UploadCloud, ChevronDown, X, ArrowUpDown
+  Star, UploadCloud, ChevronDown, X, ArrowUpDown, Plus, Dices
 } from "lucide-react"
+import { labelize } from "@/lib/constants"
 import type { Place } from "@/types"
 
 function PlaceholderPhoto({ name }: { name: string }) {
@@ -136,6 +137,7 @@ export function Dashboard() {
 
   const search = searchParams.get("q") || ""
   const visited = searchParams.get("visited") || "all"
+  const typeFilter = searchParams.get("type") || ""
   const dietFilter = searchParams.get("diet") || "all"
   const sortBy = searchParams.get("sort") || "recently_added"
   const cityFilter = searchParams.get("city") || ""
@@ -200,6 +202,7 @@ export function Dashboard() {
     }
     if (visited === "visited") result = result.filter((p) => p.visited)
     if (visited === "wishlist") result = result.filter((p) => !p.visited)
+    if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
     if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
     if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
     if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
@@ -235,11 +238,23 @@ export function Dashboard() {
   }
 
   const cities = [...new Set(places.map((p) => p.city).filter(Boolean))] as string[]
+  const placeTypes = [...new Set(places.map((p) => p.place_type).filter(Boolean))] as string[]
 
   const activeFilterCount = [
     search, visited !== "all" ? visited : "", dietFilter !== "all" ? dietFilter : "",
-    cityFilter, ...vibeFilter, ...occasionFilter
+    typeFilter, cityFilter, ...vibeFilter, ...occasionFilter
   ].filter(Boolean).length
+
+  // "I'm bored!" — outsyd-style: jump to a random place that matches the
+  // current filters, preferring ones you haven't visited yet
+  const handleImBored = () => {
+    const pool = displayedPlaces.length > 0 ? displayedPlaces : places
+    if (pool.length === 0) return
+    const unvisited = pool.filter((p) => !p.visited)
+    const pickFrom = unvisited.length > 0 ? unvisited : pool
+    const pick = pickFrom[Math.floor(Math.random() * pickFrom.length)]
+    navigate(`/place/${pick.id}`)
+  }
 
   // Skeleton
   const SkeletonCard = () => (
@@ -277,6 +292,13 @@ export function Dashboard() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => navigate("/add")}
+            className="flex items-center gap-1.5 text-[13px] font-medium bg-accent text-surface rounded-md px-3 py-2 hover:bg-accent-hover transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add place</span>
+          </button>
           <button
             onClick={() => navigate("/onboarding")}
             className="hidden sm:flex items-center gap-1.5 text-[13px] text-ink-secondary hover:text-ink border border-border rounded-md px-3 py-2 transition-colors"
@@ -330,6 +352,15 @@ export function Dashboard() {
             >
               {moodLoading ? "..." : "Find"}
             </button>
+            <button
+              onClick={handleImBored}
+              disabled={places.length === 0}
+              title="Take me somewhere random"
+              className="border border-border-strong bg-surface text-ink px-4 rounded-md text-[14px] font-medium hover:border-accent hover:text-accent transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Dices className="w-4 h-4" />
+              <span className="hidden sm:inline">I'm bored!</span>
+            </button>
           </div>
         </div>
 
@@ -374,6 +405,27 @@ export function Dashboard() {
                     </label>
                   ))}
                 </div>
+
+                {/* Category */}
+                {placeTypes.length > 0 && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.06em] text-ink-secondary mb-2 border-b border-border pb-1">Category</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {placeTypes.map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setParam("type", typeFilter === t ? "" : t)}
+                          className={`h-7 px-3 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t
+                            ? "bg-accent-muted text-accent-text"
+                            : "bg-transparent border border-border text-ink-secondary hover:border-border-strong"
+                            }`}
+                        >
+                          {labelize(t)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Diet */}
                 <div>

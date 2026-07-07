@@ -9,6 +9,7 @@ import { Dashboard } from "@/pages/Dashboard"
 import { Onboarding } from "@/pages/Onboarding"
 import { Flashcard } from "@/pages/Flashcard"
 import { PlaceDetail } from "@/pages/PlaceDetail"
+import { AddPlace } from "@/pages/AddPlace"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
 function App() {
@@ -32,6 +33,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Onboarding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add"
+          element={
+            <ProtectedRoute>
+              <AddPlace />
             </ProtectedRoute>
           }
         />

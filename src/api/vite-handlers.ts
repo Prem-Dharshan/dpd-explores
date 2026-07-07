@@ -77,9 +77,34 @@ export function registerApiHandlers(server: ViteDevServer) {
     // ── POST /api/enrich ─────────────────────────────────────
     if (url === "/api/enrich" && req.method === "POST") {
       try {
-        const body = await readBody(req) as { placeId?: string; name?: string }
+        const body = await readBody(req) as { placeId?: string; name?: string; url?: string }
         const apiKey = process.env.GMAPS_API_KEY
         if (!apiKey) return json(res, 500, { error: "GMAPS_API_KEY not configured" })
+
+        let coords: { latitude: number; longitude: number } | null = null
+
+        // A pasted Google Maps link: expand short links + parse lookup keys
+        if (body.url) {
+          let expanded = body.url.trim()
+          for (let i = 0; i < 5; i++) {
+            const r = await fetch(expanded, { method: "GET", redirect: "manual" })
+            const loc = r.headers.get("location")
+            if (!loc) break
+            expanded = new URL(loc, expanded).toString()
+          }
+          const nameMatch = expanded.match(/\/maps\/place\/([^/@?]+)/)
+          const coordMatch = expanded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+          const pidMatch =
+            expanded.match(/query_place_id=([^&]+)/) ||
+            expanded.match(/!19s(ChIJ[^!?&/]+)/) ||
+            expanded.match(/\bplace_id:([^&!?/]+)/)
+          body.placeId = body.placeId || (pidMatch ? pidMatch[1] : undefined)
+          body.name = body.name || (nameMatch ? decodeURIComponent(nameMatch[1].replace(/\+/g, " ")) : undefined)
+          coords = coordMatch ? { latitude: +coordMatch[1], longitude: +coordMatch[2] } : null
+          if (!body.placeId && !body.name) {
+            return json(res, 400, { error: "Couldn't read a place from that link" })
+          }
+        }
 
         let placeData: unknown = null
 
@@ -103,10 +128,15 @@ export function registerApiHandlers(server: ViteDevServer) {
             method: "POST",
             headers: {
               "X-Goog-Api-Key": apiKey,
-              "X-Goog-FieldMask": FIELDS,
+              // searchText requires fields prefixed with "places."
+              "X-Goog-FieldMask": FIELDS.split(",").map((f) => `places.${f}`).join(","),
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ textQuery: body.name, regionCode: "IN" }),
+            body: JSON.stringify({
+              textQuery: body.name,
+              regionCode: "IN",
+              ...(coords && { locationBias: { circle: { center: coords, radius: 5000 } } }),
+            }),
           })
           if (r.ok) {
             const d = await r.json() as { places?: unknown[] }
