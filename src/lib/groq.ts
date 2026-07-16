@@ -60,14 +60,7 @@ export async function categorizePlaceWithGroq(placeData: {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) throw new Error("Missing GROQ_API_KEY")
 
-  const prompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
-
-Given this place:
-Name: ${placeData.name}
-Address: ${placeData.address || "Unknown"}
-Place Type: ${placeData.place_type || "Unknown"}
-User Notes: ${placeData.notes || "None"}
-User Comment: ${placeData.comment || "None"}
+  const systemPrompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
 
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {
@@ -88,6 +81,13 @@ Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 
 For non-food places (treks, museums, arcades...) leave cuisine fields and signature_dishes empty and pick the right place_type. Only include values you are confident about. Use empty arrays for unknown fields.`
 
+  const userPrompt = `Given this place:
+Name: ${placeData.name}
+Address: ${placeData.address || "Unknown"}
+Place Type: ${placeData.place_type || "Unknown"}
+User Notes: ${placeData.notes || "None"}
+User Comment: ${placeData.comment || "None"}`
+
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -96,7 +96,10 @@ For non-food places (treks, museums, arcades...) leave cuisine fields and signat
     },
     body: JSON.stringify({
       model: "openai/gpt-oss-120b",
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
       temperature: 0.2,
     }),
   })
@@ -144,15 +147,17 @@ export async function getMoodRecommendationWithGroq(
       model: "openai/gpt-oss-120b",
       messages: [
         {
-          role: "user",
+          role: "system",
           content: `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
 Return ONLY a JSON array of place IDs: ["uuid1", "uuid2", ...]
 Do not explain. Only return the array.
 
 Available places:
-${JSON.stringify(placesContext, null, 2)}
-
-User request: ${moodPrompt}`,
+${JSON.stringify(placesContext, null, 2)}`
+        },
+        {
+          role: "user",
+          content: `User request: ${moodPrompt}`
         },
       ],
       temperature: 0.7,
