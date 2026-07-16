@@ -19,10 +19,47 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Check if a URL is safe to fetch (prevents SSRF) */
+function isSafeUrl(urlStr: string): boolean {
+  try {
+    const u = new URL(urlStr)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+
+    const hostname = u.hostname.toLowerCase()
+
+    // Block localhost
+    if (hostname === "localhost") return false
+
+    // IPv4 private blocks and loopback
+    if (/^127\./.test(hostname)) return false
+    if (/^10\./.test(hostname)) return false
+    if (/^192\.168\./.test(hostname)) return false
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)) return false
+
+    // Cloud Instance Metadata
+    if (hostname === "169.254.169.254") return false
+
+    // Catch-all for 0.0.0.0
+    if (hostname === "0.0.0.0" || hostname === "[::]") return false
+
+    // Basic IPv6 loopback and unique local addresses
+    if (hostname === "[::1]" || hostname === "::1") return false
+    if (hostname.startsWith("[fd") || hostname.startsWith("[fc")) return false
+    if (hostname.startsWith("[fe8") || hostname.startsWith("[fe9") || hostname.startsWith("[fea") || hostname.startsWith("[feb")) return false
+
+    return true
+  } catch (_e) {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isSafeUrl(current)) {
+      throw new Error(`Unsafe URL detected: ${current}`)
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
