@@ -4,7 +4,7 @@
 
 export function GmapsIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 92.3 132.3" className={className} aria-hidden="true">
+    <svg viewBox="0 0 92.3 132.3" className={className} role="img" aria-label="Google Maps">
       <path
         fill="#1a73e8"
         d="M60.2 2.2C55.8.8 51 0 46.1 0 32 0 19.3 6.4 10.8 16.5l21.8 18.3L60.2 2.2z"
