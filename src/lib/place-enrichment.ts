@@ -112,19 +112,27 @@ export async function enrichPlacesBatch(
   userId: string,
   onProgress?: (current: number, total: number) => void
 ): Promise<Array<{ enriched: Partial<Place>; error?: string }>> {
-  const results: Array<{ enriched: Partial<Place>; error?: string }> = []
+  const results: Array<{ enriched: Partial<Place>; error?: string }> = new Array(places.length)
+  const CONCURRENCY = 5
+  let completed = 0
+  let currentIndex = 0
 
-  for (let i = 0; i < places.length; i++) {
-    const result = await enrichPlaceFromAPI(places[i], userId)
-    results.push(result)
+  async function worker() {
+    while (currentIndex < places.length) {
+      const index = currentIndex++
+      const place = places[index]
 
-    onProgress?.(i + 1, places.length)
+      results[index] = await enrichPlaceFromAPI(place, userId)
+      completed++
+      onProgress?.(completed, places.length)
 
-    // Add delay to avoid rate limiting
-    if (i < places.length - 1) {
+      // Add delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
   }
+
+  const workers = Array.from({ length: Math.min(CONCURRENCY, places.length) }, () => worker())
+  await Promise.all(workers)
 
   return results
 }
