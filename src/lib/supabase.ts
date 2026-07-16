@@ -10,4 +10,11 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env")
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = (() => {
+  try {
+    return createClient(supabaseUrl, supabaseKey)
+  } catch (error) {
+    console.error("Failed to initialize Supabase client:", error)
+    throw error
+  }
+})()
