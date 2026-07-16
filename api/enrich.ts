@@ -21,14 +21,12 @@ const FIELDS = [
 
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
-  let current = url
-  for (let i = 0; i < 5; i++) {
-    const r = await fetch(current, { method: "GET", redirect: "manual" })
-    const loc = r.headers.get("location")
-    if (!loc) break
-    current = new URL(loc, current).toString()
+  try {
+    const r = await fetch(url, { method: "HEAD", redirect: "follow" })
+    return r.url
+  } catch {
+    return url
   }
-  return current
 }
 
 /** Extract place name, coordinates, and place id from a Google Maps URL */
