@@ -116,30 +116,40 @@ export function CSVUpload({ userId, onSuccess, onError }: Props) {
 
       const enriched: Place[] = []
       const errors: string[] = []
+      const BATCH_SIZE = 5
+      let completed = 0
 
-      for (let i = 0; i < rawPlaces.length; i++) {
-        const raw = rawPlaces[i]
-        setProgress({ current: i + 1, total: rawPlaces.length, currentName: raw.name, errors })
+      for (let i = 0; i < rawPlaces.length; i += BATCH_SIZE) {
+        const batch = rawPlaces.slice(i, i + BATCH_SIZE)
 
-        try {
-          const placeId = extractPlaceIdFromUrl(raw.gmaps_url || "")
-          const res = await fetch("/api/enrich", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ placeId, name: raw.name }),
+        await Promise.all(
+          batch.map(async (raw) => {
+            try {
+              const placeId = extractPlaceIdFromUrl(raw.gmaps_url || "")
+              const res = await fetch("/api/enrich", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ placeId, name: raw.name }),
+              })
+
+              const apiData: Record<string, unknown> = res.ok ? await res.json() : {}
+              const mapped = mapPlacesAPIToPlace(raw, apiData, userId) as Place
+              enriched.push(mapped)
+            } catch {
+              errors.push(raw.name)
+              const fallback = mapPlacesAPIToPlace(raw, {}, userId) as Place
+              enriched.push(fallback)
+            } finally {
+              completed++
+              setProgress({ current: completed, total: rawPlaces.length, currentName: raw.name, errors })
+            }
           })
+        )
 
-          const apiData: Record<string, unknown> = res.ok ? await res.json() : {}
-          const mapped = mapPlacesAPIToPlace(raw, apiData, userId) as Place
-          enriched.push(mapped)
-        } catch {
-          errors.push(raw.name)
-          const fallback = mapPlacesAPIToPlace(raw, {}, userId) as Place
-          enriched.push(fallback)
+        // Small delay to avoid rate limiting between batches
+        if (i + BATCH_SIZE < rawPlaces.length) {
+          await new Promise(r => setTimeout(r, 150))
         }
-
-        // Small delay to avoid rate limiting
-        if (i < rawPlaces.length - 1) await new Promise(r => setTimeout(r, 150))
       }
 
       onSuccess(enriched)
