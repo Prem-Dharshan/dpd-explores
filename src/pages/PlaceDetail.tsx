@@ -114,16 +114,23 @@ export function PlaceDetail() {
           category,
           score,
         }))
+
+        const promises: PromiseLike<unknown>[] = [
+          // Update place visited status
+          supabase.from("places").update({
+            visited: true,
+            visited_count: (place.visited_count || 0) + 1,
+            last_visited_at: reviewForm.visited_at,
+            first_visited_at: place.first_visited_at || reviewForm.visited_at,
+          }).eq("id", place.id)
+        ]
+
         if (ratingsToInsert.length > 0) {
-          await supabase.from("ratings").insert(ratingsToInsert)
+          promises.push(supabase.from("ratings").insert(ratingsToInsert))
         }
-        // Update place visited status
-        await supabase.from("places").update({
-          visited: true,
-          visited_count: (place.visited_count || 0) + 1,
-          last_visited_at: reviewForm.visited_at,
-          first_visited_at: place.first_visited_at || reviewForm.visited_at,
-        }).eq("id", place.id)
+
+        await Promise.all(promises)
+
         setPlace((p) => p ? { ...p, visited: true } : p)
       }
 
