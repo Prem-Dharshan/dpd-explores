@@ -479,8 +479,7 @@ export function Dashboard() {
                           onClick={() => {
                             const next = new URLSearchParams(searchParams)
                             if (active) {
-                              next.delete("vibe")
-                              vibeFilter.filter((x) => x !== v).forEach((x) => next.append("vibe", x))
+                              next.delete("vibe", v)
                             } else {
                               next.append("vibe", v)
                             }
