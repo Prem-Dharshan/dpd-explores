@@ -42,6 +42,16 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isValidGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    const allowedHosts = ["maps.app.goo.gl", "goo.gl", "maps.google.com", "www.google.com"]
+    return allowedHosts.includes(url.hostname) || url.hostname.endsWith(".google.com")
+  } catch {
+    return false
+  }
+}
+
 export function registerApiHandlers(server: ViteDevServer) {
   server.middlewares.use(async (req, res, next) => {
     const url = req.url?.split("?")[0]
@@ -86,7 +96,14 @@ export function registerApiHandlers(server: ViteDevServer) {
         // A pasted Google Maps link: expand short links + parse lookup keys
         if (body.url) {
           let expanded = body.url.trim()
+          if (!isValidGoogleMapsUrl(expanded)) {
+            return json(res, 400, { error: "Invalid Google Maps URL" })
+          }
+
           for (let i = 0; i < 5; i++) {
+            if (!isValidGoogleMapsUrl(expanded)) {
+              return json(res, 400, { error: "Invalid or untrusted URL during expansion" })
+            }
             const r = await fetch(expanded, { method: "GET", redirect: "manual" })
             const loc = r.headers.get("location")
             if (!loc) break
