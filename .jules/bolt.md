@@ -1,0 +1,3 @@
+## 2024-07-16 - useSearchParams returning new arrays on every render
+**Learning:** In React Router, `useSearchParams()[0].getAll()` returns a new array reference on every single render. When passing these directly to `useCallback` or `useMemo` dependency arrays, it breaks memoization and causes expensive re-computations (like filtering/sorting a large list of places) on every render.
+**Action:** Always stringify array results from `searchParams.getAll()` (e.g., using `.join(',')`) before putting them in dependency arrays, or memoize the parsed values. Also, prefer `useMemo` over `useCallback` followed by immediate invocation for derived state.
