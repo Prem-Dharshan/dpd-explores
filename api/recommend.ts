@@ -39,17 +39,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "moonshotai/kimi-k2-instruct",
-        messages: [{
-          role: "user",
-          content: `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
+        messages: [
+          {
+            role: "system",
+            content: `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
 Return ONLY a JSON array of place IDs: ["uuid1", "uuid2", ...]
 Do not explain. Only return the array.
 
 Available places:
-${JSON.stringify(placesContext, null, 2)}
-
-User request: ${moodPrompt}`,
-        }],
+${JSON.stringify(placesContext, null, 2)}`
+          },
+          {
+            role: "user",
+            content: moodPrompt
+          }
+        ],
         temperature: 0.7,
       }),
     })
