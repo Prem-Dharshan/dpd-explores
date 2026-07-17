@@ -19,10 +19,23 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isValidGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    const allowedHosts = ["maps.app.goo.gl", "goo.gl", "maps.google.com", "www.google.com"]
+    return allowedHosts.includes(url.hostname) || url.hostname.endsWith(".google.com")
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isValidGoogleMapsUrl(current)) {
+      throw new Error("Invalid or untrusted URL during expansion")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -62,7 +75,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // A pasted Google Maps link: expand + parse it for the best lookup keys
     if (url && typeof url === "string") {
-      const expanded = await expandUrl(url.trim())
+      const trimmedUrl = url.trim()
+      if (!isValidGoogleMapsUrl(trimmedUrl)) {
+        return res.status(400).json({ error: "Invalid Google Maps URL" })
+      }
+      const expanded = await expandUrl(trimmedUrl)
       const parsed = parseGmapsUrl(expanded)
       placeId = placeId || parsed.placeId
       name = name || parsed.name
