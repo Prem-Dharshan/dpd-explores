@@ -57,6 +57,7 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
         )}
         {/* Open in Google Maps */}
         <button
+          aria-label="Open in Google Maps"
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -340,7 +341,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button aria-label="Clear highlight" onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
                   <X className="w-4 h-4" />
                 </button>
               )}
