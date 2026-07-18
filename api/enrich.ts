@@ -19,10 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Check if a domain is a valid Google Maps host (including regional variations) */
+function isValidMapsHost(hostname: string): boolean {
+  return (
+    hostname === "maps.app.goo.gl" ||
+    hostname === "goo.gl" ||
+    hostname.endsWith(".google.com") ||
+    // handle regional variations like .co.uk, .ca, .in
+    /^(?:www\.|maps\.)?google\.[a-z]{2,3}(?:\.[a-z]{2})?$/.test(hostname)
+  )
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    try {
+      const currentUrlObj = new URL(current);
+      if (!isValidMapsHost(currentUrlObj.hostname)) {
+        throw new Error("Invalid domain in maps URL");
+      }
+    } catch {
+      throw new Error("Invalid URL or domain");
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
