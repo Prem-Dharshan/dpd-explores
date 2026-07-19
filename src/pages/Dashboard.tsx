@@ -313,9 +313,19 @@ export function Dashboard() {
               className="w-8 h-8 rounded-full border border-border cursor-pointer"
               onClick={handleSignOut}
               title="Click to sign out"
+              aria-label="Sign out"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSignOut()
+                }
+              }}
             />
           ) : (
             <button
+              aria-label="Sign out"
               onClick={handleSignOut}
               className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
             >
@@ -340,7 +350,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button aria-label="Clear mood search" onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
                   <X className="w-4 h-4" />
                 </button>
               )}

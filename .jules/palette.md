@@ -1,0 +1,3 @@
+## 2024-05-24 - Missing ARIA Labels on Icon-Only Controls
+**Learning:** This app's components frequently omit `aria-label` attributes on icon-only interactive elements like carousel arrows/dots, modal close buttons (e.g. Add Review 'X'), and inline input clear buttons (e.g. mood search clear). Additionally, clickable image avatars acting as sign-out buttons lacked screen reader affordances (`role="button"`, `tabIndex`, and `onKeyDown` handlers) in addition to an `aria-label`.
+**Action:** Always actively check for and add missing `aria-label`s to icon-only controls across the codebase. When `img` tags are used as buttons (e.g., user avatars), ensure they include full keyboard accessibility (`role`, `tabIndex`, `onKeyDown`) in addition to `aria-label`s.
