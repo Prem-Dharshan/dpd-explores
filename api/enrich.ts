@@ -19,13 +19,41 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_GMAPS_HOSTS = new Set([
+  "maps.app.goo.gl",
+  "www.google.com",
+  "google.com",
+  "maps.google.com",
+]);
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(current);
+    } catch {
+      throw new Error("Invalid URL");
+    }
+
+    if (parsedUrl.protocol !== "https:") {
+      throw new Error("Invalid protocol: only https is allowed");
+    }
+
+    // Allow exactly matches from the set, or any *.google.<tld> domain
+    if (
+      !ALLOWED_GMAPS_HOSTS.has(parsedUrl.hostname) &&
+      !/^([a-z0-9-]+\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(parsedUrl.hostname)
+    ) {
+      throw new Error(`SSRF Prevention: Hostname ${parsedUrl.hostname} is not allowed`);
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
+
+    // Ensure relative redirects resolve against the current URL correctly
     current = new URL(loc, current).toString()
   }
   return current
