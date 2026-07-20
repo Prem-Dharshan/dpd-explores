@@ -1,0 +1,4 @@
+## 2024-07-20 - [SSRF via Unrestricted URL Redirect Expansion]
+**Vulnerability:** Server-Side Request Forgery (SSRF) in `/api/enrich` endpoint (`expandUrl` function).
+**Learning:** The application blindly followed redirects to expand shortened Google Maps URLs (`maps.app.goo.gl`) using an unvalidated user-provided input URL. This would allow an attacker to make the server send HTTP requests to internal networks, AWS metadata endpoints, or other arbitrary internal/external services by supplying malicious URLs (e.g. `http://localhost:3000`, `http://169.254.169.254/latest/meta-data/`).
+**Prevention:** Always implement strict hostname validation checks using an allowlist of expected domains (e.g., `maps.app.goo.gl`, `goo.gl`, `maps.google.com`, `www.google.com`, `google.com`) before making outbound server `fetch` requests and during redirect loops.
