@@ -310,13 +310,23 @@ export function Dashboard() {
             <img
               src={user.image}
               alt={user.name || ""}
-              className="w-8 h-8 rounded-full border border-border cursor-pointer"
+              className="w-8 h-8 rounded-full border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent outline-none"
               onClick={handleSignOut}
               title="Click to sign out"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSignOut()
+                }
+              }}
             />
           ) : (
             <button
               onClick={handleSignOut}
+              aria-label="Sign out"
+              title="Sign out"
               className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
             >
               {user?.email?.charAt(0).toUpperCase()}
@@ -340,7 +350,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button aria-label="Clear highlight" onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
                   <X className="w-4 h-4" />
                 </button>
               )}
