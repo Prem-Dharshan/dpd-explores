@@ -19,10 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = [
+  "maps.app.goo.gl",
+  "goo.gl",
+  "google.com",
+  "www.google.com",
+  "maps.google.com"
+]
+
+function isAllowedUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    return ALLOWED_HOSTS.includes(url.hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedUrl(current)) {
+      throw new Error(`Disallowed URL in redirect chain: ${current}`)
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
