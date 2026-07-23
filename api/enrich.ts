@@ -19,10 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = [
+  "maps.app.goo.gl",
+  "goo.gl",
+  "google.com",
+  "www.google.com",
+  "maps.google.com",
+]
+
+function isAllowedHost(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    return (url.protocol === "http:" || url.protocol === "https:") && ALLOWED_HOSTS.includes(url.hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedHost(current)) {
+      throw new Error("Untrusted or invalid URL")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break

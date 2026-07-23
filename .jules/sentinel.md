@@ -1,0 +1,4 @@
+## 2024-05-18 - SSRF Vulnerability in Link Expansion
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs and followed redirects using `fetch` without any hostname validation. An attacker could provide a malicious URL to perform Server-Side Request Forgery (SSRF), potentially accessing internal services or scanning internal networks.
+**Learning:** Redirect-following functionality is a common source of SSRF vulnerabilities because even if the initial URL looks safe, it might redirect to a malicious internal endpoint (e.g., `http://169.254.169.254` for AWS metadata or `http://localhost:8080`).
+**Prevention:** Always implement an allowlist of trusted hostnames for outbound HTTP requests triggered by user input. Verify the hostname on the initial request and on every subsequent redirect if following redirects manually.
