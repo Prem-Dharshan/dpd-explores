@@ -1,0 +1,3 @@
+## 2024-07-24 - Accessibility for Non-Semantic Buttons
+**Learning:** When non-semantic elements like `img` tags are used as interactive elements (e.g., user avatars functioning as sign-out buttons), they lack built-in accessibility features. Screen readers won't announce them as buttons, and keyboard users won't be able to focus or activate them.
+**Action:** Always ensure that non-semantic elements used as buttons include full keyboard accessibility affordances: `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (to listen for 'Enter' or 'Space'), and visible focus styles (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`).
