@@ -1,0 +1,3 @@
+## 2024-05-24 - React Router `useSearchParams` array reference breaking memoization
+**Learning:** `useSearchParams()[0].getAll()` in React Router returns a new array reference on every render. Passing this array directly into a hook dependency array breaks memoization, causing unnecessary re-computations and `react-hooks/exhaustive-deps` (or compiler) errors if manual memoization fails.
+**Action:** Always stringify array values obtained from URL search params (e.g., using `.join(',')`) outside the hook and pass the stringified variable to the dependency array. You can parse it back inside the memoized function.

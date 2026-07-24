@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -135,6 +135,7 @@ export function Dashboard() {
   const [highlight, setHighlight] = useState<ActiveHighlight>(null)
   const [sortOpen, setSortOpen] = useState(false)
 
+  const searchParamsStr = searchParams.toString()
   const search = searchParams.get("q") || ""
   const visited = searchParams.get("visited") || "all"
   const typeFilter = searchParams.get("type") || ""
@@ -186,11 +187,23 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  // ⚡ Bolt Optimization: Memoize the filtered/sorted results to prevent expensive array
+  // re-computations on every render. We stringify searchParams to avoid breaking memoization,
+  // since .getAll() returns a new array reference on every render.
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
+    const currentParams = new URLSearchParams(searchParamsStr)
+    const currentSearch = currentParams.get("q") || ""
+    const currentVisited = currentParams.get("visited") || "all"
+    const currentTypeFilter = currentParams.get("type") || ""
+    const currentDietFilter = currentParams.get("diet") || "all"
+    const currentCityFilter = currentParams.get("city") || ""
+    const currentVibeFilter = currentParams.getAll("vibe")
+    const currentOccasionFilter = currentParams.getAll("occasion")
+    const currentSortBy = currentParams.get("sort") || "recently_added"
 
-    if (search) {
-      const q = search.toLowerCase()
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase()
       result = result.filter((p) =>
         p.name.toLowerCase().includes(q) ||
         p.cuisine_type?.toLowerCase().includes(q) ||
@@ -200,28 +213,27 @@ export function Dashboard() {
         p.vibe.some((v) => v.includes(q))
       )
     }
-    if (visited === "visited") result = result.filter((p) => p.visited)
-    if (visited === "wishlist") result = result.filter((p) => !p.visited)
-    if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
-    if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
-    if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+
+    if (currentVisited === "visited") result = result.filter((p) => p.visited)
+    if (currentVisited === "wishlist") result = result.filter((p) => !p.visited)
+    if (currentTypeFilter) result = result.filter((p) => p.place_type === currentTypeFilter)
+    if (currentDietFilter !== "all") result = result.filter((p) => p.diet_type === currentDietFilter)
+    if (currentCityFilter) result = result.filter((p) => p.city?.toLowerCase() === currentCityFilter.toLowerCase())
+    if (currentVibeFilter.length) result = result.filter((p) => currentVibeFilter.some((v) => p.vibe.includes(v as never)))
+    if (currentOccasionFilter.length) result = result.filter((p) => currentOccasionFilter.some((o) => p.occasion.includes(o as never)))
 
     // Sort
-    if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
-    else if (sortBy === "recently_visited") result.sort((a, b) => (b.last_visited_at || "").localeCompare(a.last_visited_at || ""))
-    else if (sortBy === "wishlist_priority") {
+    if (currentSortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
+    else if (currentSortBy === "recently_visited") result.sort((a, b) => (b.last_visited_at || "").localeCompare(a.last_visited_at || ""))
+    else if (currentSortBy === "wishlist_priority") {
       const order: Record<string, number> = { high: 0, medium: 1, low: 2 }
       result.sort((a, b) => (order[a.wishlist_priority] ?? 3) - (order[b.wishlist_priority] ?? 3))
     }
-    else if (sortBy === "budget_low_high") result.sort((a, b) => (a.budget_per_person_max || 9999) - (b.budget_per_person_max || 9999))
-    else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
+    else if (currentSortBy === "budget_low_high") result.sort((a, b) => (a.budget_per_person_max || 9999) - (b.budget_per_person_max || 9999))
+    else if (currentSortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, searchParamsStr])
 
   // Mood recommender
   const handleMoodSearch = async () => {
