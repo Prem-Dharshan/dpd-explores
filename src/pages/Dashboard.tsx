@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -186,7 +186,7 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -205,23 +205,33 @@ export function Dashboard() {
     if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
     if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
     if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+
+    const activeVibes = searchParams.getAll("vibe")
+    if (activeVibes.length) {
+      result = result.filter((p) => activeVibes.some((v) => p.vibe.includes(v as never)))
+    }
+
+    const activeOccasions = searchParams.getAll("occasion")
+    if (activeOccasions.length) {
+      result = result.filter((p) => activeOccasions.some((o) => p.occasion.includes(o as never)))
+    }
 
     // Sort
-    if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
-    else if (sortBy === "recently_visited") result.sort((a, b) => (b.last_visited_at || "").localeCompare(a.last_visited_at || ""))
-    else if (sortBy === "wishlist_priority") {
+    if (sortBy === "name_asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === "recently_visited") {
+      result.sort((a, b) => (b.last_visited_at || "").localeCompare(a.last_visited_at || ""))
+    } else if (sortBy === "wishlist_priority") {
       const order: Record<string, number> = { high: 0, medium: 1, low: 2 }
       result.sort((a, b) => (order[a.wishlist_priority] ?? 3) - (order[b.wishlist_priority] ?? 3))
+    } else if (sortBy === "budget_low_high") {
+      result.sort((a, b) => (a.budget_per_person_max || 9999) - (b.budget_per_person_max || 9999))
+    } else if (sortBy === "budget_high_low") {
+      result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
     }
-    else if (sortBy === "budget_low_high") result.sort((a, b) => (a.budget_per_person_max || 9999) - (b.budget_per_person_max || 9999))
-    else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, searchParams, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
