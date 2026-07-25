@@ -42,6 +42,23 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_MAPS_HOSTS = new Set([
+  "maps.app.goo.gl",
+  "goo.gl",
+  "www.google.com",
+  "google.com",
+  "maps.google.com",
+])
+
+function isValidMapsUrl(urlStr: string): boolean {
+  try {
+    const u = new URL(urlStr)
+    return ALLOWED_MAPS_HOSTS.has(u.hostname) && (u.protocol === "https:" || u.protocol === "http:")
+  } catch {
+    return false
+  }
+}
+
 export function registerApiHandlers(server: ViteDevServer) {
   server.middlewares.use(async (req, res, next) => {
     const url = req.url?.split("?")[0]
@@ -87,6 +104,9 @@ export function registerApiHandlers(server: ViteDevServer) {
         if (body.url) {
           let expanded = body.url.trim()
           for (let i = 0; i < 5; i++) {
+            if (!isValidMapsUrl(expanded)) {
+              throw new Error("Invalid URL hostname in redirect chain")
+            }
             const r = await fetch(expanded, { method: "GET", redirect: "manual" })
             const loc = r.headers.get("location")
             if (!loc) break
@@ -147,7 +167,10 @@ export function registerApiHandlers(server: ViteDevServer) {
         return json(res, 200, placeData || {})
       } catch (e) {
         console.error("[/api/enrich]", e)
-        return json(res, 500, { error: String(e) })
+        if (e instanceof Error && e.message === "Invalid URL hostname in redirect chain") {
+          return json(res, 400, { error: "Invalid Maps URL" })
+        }
+        return json(res, 500, { error: "An error occurred" })
       }
     }
 
