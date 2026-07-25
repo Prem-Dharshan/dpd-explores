@@ -19,10 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_MAPS_HOSTS = new Set([
+  "maps.app.goo.gl",
+  "goo.gl",
+  "www.google.com",
+  "google.com",
+  "maps.google.com",
+])
+
+function isValidMapsUrl(urlStr: string): boolean {
+  try {
+    const u = new URL(urlStr)
+    return ALLOWED_MAPS_HOSTS.has(u.hostname) && (u.protocol === "https:" || u.protocol === "http:")
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isValidMapsUrl(current)) {
+      throw new Error("Invalid URL hostname in redirect chain")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +133,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message === "Invalid URL hostname in redirect chain") {
+      return res.status(400).json({ error: "Invalid Maps URL" })
+    }
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
