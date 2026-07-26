@@ -19,10 +19,31 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_DOMAINS = [
+  "google.com",
+  "www.google.com",
+  "google.co.in",
+  "www.google.co.in",
+  "maps.app.goo.gl",
+  "goo.gl",
+]
+
+function isAllowedDomain(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return ALLOWED_DOMAINS.includes(parsed.hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedDomain(current)) {
+      throw new Error("Invalid or untrusted URL domain")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +134,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
