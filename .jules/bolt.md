@@ -1,0 +1,3 @@
+## 2024-07-27 - useSearchParams array stability
+**Learning:** In React Router, `useSearchParams()[0].getAll()` returns a new array reference on every single render. When placed in dependency arrays of `useCallback` or `useMemo`, it breaks memoization and forces re-execution on every state change (e.g., just typing into a completely disconnected input like `moodInput` forces an expensive filter/sort of all places).
+**Action:** Stringify the array results (e.g. `.join(',')`) and assign that to a string variable, then construct the actual array using `useMemo` that depends ONLY on the stringified variable. The `react-hooks/exhaustive-deps` rule accepts this, and the reference stays stable. Also, replace `useCallback` that invokes derived state synchronously with `useMemo`.
