@@ -19,10 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_MAPS_DOMAINS = new Set([
+  "maps.app.goo.gl",
+  "goo.gl",
+  "www.google.com",
+  "google.com",
+  "maps.google.com",
+])
+
+function isAllowedDomain(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname
+    return ALLOWED_MAPS_DOMAINS.has(hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedDomain(current)) {
+      throw new Error(`SSRF Prevention: Domain not allowed: ${current}`)
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +133,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message.startsWith("SSRF Prevention:")) {
+      return res.status(400).json({ error: "Invalid or unsupported URL domain" })
+    }
+    // Fail securely for 500s: don't expose String(e) which could contain internals
+    return res.status(500).json({ error: "An error occurred" })
   }
 }

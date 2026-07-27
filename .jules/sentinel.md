@@ -1,0 +1,4 @@
+## 2025-01-20 - [Fix SSRF in Google Maps URL expansion]
+**Vulnerability:** Server-Side Request Forgery (SSRF) was possible via the `expandUrl` function in `api/enrich.ts` due to lack of domain validation before fetching redirected URLs.
+**Learning:** The URL expansion loop blindly followed HTTP redirects from user-provided URLs up to 5 times. An attacker could supply a URL that redirects to internal or restricted endpoints, leading to SSRF.
+**Prevention:** Always implement strict domain allowlisting before making outbound server `fetch` requests, and ensure this validation is re-evaluated during every redirect hop. Add secure error handling to avoid leaking stack traces by replacing `String(e)` with a generic 500 error message.
