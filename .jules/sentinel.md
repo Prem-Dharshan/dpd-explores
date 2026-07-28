@@ -1,0 +1,4 @@
+## 2024-07-28 - [SSRF in Maps URL Expansion]
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs and fetched them as part of expanding Google Maps shortlinks. This could allow an attacker to make the server perform requests (SSRF) to internal infrastructure or external sites, potentially bypassing network firewalls and causing harm. The catch block also leaked raw error strings via `String(e)`.
+**Learning:** External URL fetching and redirection logic lacked domain validation, and the error handler directly forwarded the exception string to the client.
+**Prevention:** Always validate external URL hostnames against an allowlist (e.g., `['maps.app.goo.gl', 'goo.gl', 'google.com']`) before passing them to server-side `fetch`. Verify this check is applied on every step of a manual redirect loop. Also fail securely by returning generic error messages (e.g., "An error occurred") in global `catch` blocks.
