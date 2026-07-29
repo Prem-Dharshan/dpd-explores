@@ -1,0 +1,3 @@
+## 2024-03-24 - React Router useSearchParams Array Reference Re-renders
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render, which causes `useMemo`/`useCallback` hooks depending on it to re-evaluate on unrelated renders (like when typing in a mood search input, causing the entire list to re-filter).
+**Action:** When using `useSearchParams().getAll()` as a dependency, stringify the array first (e.g., `.join(',')`) and reconstruct the actual array with `useMemo` depending on the string to maintain referential equality across renders. Also, directly evaluate derived state with `useMemo` rather than wrapping it in a `useCallback` that gets invoked on every render.
