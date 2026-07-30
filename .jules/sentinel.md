@@ -1,0 +1,4 @@
+## 2025-05-18 - Prevent SSRF during redirect following
+**Vulnerability:** Server-Side Request Forgery (SSRF) risk in `api/enrich.ts` where user-provided Google Maps URLs were fetched without hostname validation, and any redirect URLs returned by the server were automatically followed without subsequent validation.
+**Learning:** Outbound network requests to user-controlled URLs must explicitly whitelist allowed hostnames. Critically, when following redirects (e.g. `redirect: "manual"` loop), the location URL must be validated *before* every single request, not just the initial one, because an attacker could redirect the request to an internal network address.
+**Prevention:** Implement and enforce a strict whitelist for allowed hostnames using a helper function (e.g., `isAllowedMapsUrl`), and ensure it's evaluated against the target URL at the start of every iteration in a redirect-following loop.
