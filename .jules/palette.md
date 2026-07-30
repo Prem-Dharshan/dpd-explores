@@ -1,0 +1,3 @@
+## 2024-07-30 - Interactive Non-Semantic Elements Require Explicit A11y Attributes
+**Learning:** Using non-semantic elements like `img` as interactive controls (e.g., the user avatar for opening menus or signing out) completely breaks keyboard accessibility because they don't receive focus natively and don't respond to standard keyboard events (Enter/Space).
+**Action:** Whenever a non-semantic element is made interactive, always include `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Enter/Space), and an explicit `aria-label`. Apply `focus-visible` styling to ensure the focus state is visible to keyboard users.
