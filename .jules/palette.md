@@ -1,0 +1,3 @@
+## 2024-07-31 - Semantic HTML for Interactive Elements
+**Learning:** Using non-semantic tags like `img` for interactive actions (e.g., clickable user avatars) breaks keyboard accessibility because they don't natively receive focus or trigger on Enter/Space. Additionally, icon-only buttons (like carousel controls or modal close buttons) are completely inaccessible to screen readers without ARIA labels.
+**Action:** When using non-semantic elements as buttons, always add `role="button"`, `tabIndex={0}`, and `onKeyDown` handlers for `Enter` and `Space`. For icon-only controls, actively check for and add missing `aria-label` attributes.
