@@ -312,6 +312,15 @@ export function Dashboard() {
               alt={user.name || ""}
               className="w-8 h-8 rounded-full border border-border cursor-pointer"
               onClick={handleSignOut}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleSignOut();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Sign out"
               title="Click to sign out"
             />
           ) : (
