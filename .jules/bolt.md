@@ -1,0 +1,3 @@
+## 2024-08-01 - React Router URL Params Memoization
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render, which can break memoization or trigger unnecessary exhaustive-deps warnings. Synchronously derived state should use `useMemo` directly rather than an immediately invoked `useCallback` on every render.
+**Action:** When extracting arrays from URL search params, avoid `.join(',')`/`.split(',')` as values could contain commas. Instead, extract the raw array, then use `useMemo` returning the raw array but with `JSON.stringify(rawArray)` in the dependency list. For synchronously derived state, use `useMemo` directly.
