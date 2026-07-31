@@ -19,10 +19,23 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = new Set([
+  "maps.app.goo.gl",
+  "www.google.com",
+  "maps.google.com",
+  "goo.gl",
+])
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    // SECURITY: Validate hostname before each fetch to prevent SSRF
+    const parsed = new URL(current)
+    if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+      throw new Error(`Untrusted hostname: ${parsed.hostname}`)
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -112,7 +125,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json(placeData || {})
   } catch (e) {
+    // SECURITY: Log internally but do not leak internal errors or stack traces
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred while enriching place data" })
   }
 }
