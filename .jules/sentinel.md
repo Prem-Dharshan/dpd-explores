@@ -1,0 +1,4 @@
+## 2024-08-01 - SSRF and Information Disclosure in /api/enrich
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs and followed redirects in `expandUrl` without host validation, leading to a Server-Side Request Forgery (SSRF) vulnerability. Additionally, the error handler leaked the raw error string (`String(e)`) for all exceptions.
+**Learning:** Outbound fetches based on user input (`url`) must explicitly validate the host and protocol at every step of a redirect loop to prevent attackers from forcing the server to access internal or unexpected external resources.
+**Prevention:** Always implement strict URL validation against an allowed list of hosts (`ALLOWED_HOSTS`) before making a fetch request and handle errors securely by returning generic 500 responses (`"An error occurred"`) instead of exposing internal exception details. Specific client-side errors like validation failures can be safely exposed with a 400 status.
