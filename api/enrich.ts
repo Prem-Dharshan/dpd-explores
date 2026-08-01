@@ -19,14 +19,28 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = ["maps.app.goo.gl", "google.com", "www.google.com", "maps.google.com", "goo.gl"]
+
+function validateUrl(urlStr: string): URL {
+  const parsed = new URL(urlStr)
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Invalid URL protocol")
+  }
+  if (!ALLOWED_HOSTS.includes(parsed.hostname)) {
+    throw new Error(`Invalid URL host: ${parsed.hostname}`)
+  }
+  return parsed
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
-  let current = url
+  let current = validateUrl(url).toString()
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+    const nextUrl = new URL(loc, current).toString()
+    current = validateUrl(nextUrl).toString()
   }
   return current
 }
@@ -113,6 +127,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && (e.message.startsWith("Invalid URL host") || e.message === "Invalid URL protocol")) {
+      return res.status(400).json({ error: e.message })
+    }
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
