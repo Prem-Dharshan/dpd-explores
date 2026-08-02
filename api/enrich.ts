@@ -19,14 +19,39 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = new Set([
+  "maps.app.goo.gl",
+  "maps.google.com",
+  "www.google.com",
+  "google.com",
+])
+
+function isAllowedUrl(urlStr: string): boolean {
+  try {
+    const url = new URL(urlStr)
+    return ALLOWED_HOSTS.has(url.hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
+  // Validate initial URL
+  if (!isAllowedUrl(current)) {
+    throw new Error("SSRF_VALIDATION_ERROR: Invalid hostname in URL")
+  }
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+    const nextUrl = new URL(loc, current).toString()
+    // Validate redirect URL
+    if (!isAllowedUrl(nextUrl)) {
+      throw new Error("SSRF_VALIDATION_ERROR: Invalid redirect hostname")
+    }
+    current = nextUrl
   }
   return current
 }
@@ -113,6 +138,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message.startsWith("SSRF_VALIDATION_ERROR")) {
+      return res.status(400).json({ error: "Invalid Google Maps URL provided" })
+    }
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
