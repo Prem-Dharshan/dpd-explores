@@ -1,0 +1,4 @@
+## 2026-08-02 - SSRF Vulnerability in Redirect Follower
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs and followed redirects in `expandUrl()` without any hostname validation. This could allow an attacker to perform Server-Side Request Forgery (SSRF) by providing a malicious URL that redirects to internal network resources.
+**Learning:** Even when fetching seemingly benign user-provided links (like Google Maps URLs), it's crucial to validate the hostnames. Furthermore, validating just the initial URL is insufficient if the code manually follows redirects; every link in the redirect chain must be validated.
+**Prevention:** Implement strict hostname whitelists (e.g., `maps.app.goo.gl`, `maps.google.com`) and ensure this validation is explicitly performed on both the initial URL and any subsequent `Location` headers encountered during redirect traversal.
