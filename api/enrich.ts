@@ -19,10 +19,26 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_HOSTS = [
+  "maps.app.goo.gl",
+  "goo.gl",
+  "www.google.com",
+  "maps.google.com",
+  "google.com"
+]
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    const parsed = new URL(current)
+    if (parsed.protocol !== "https:") {
+      throw new Error("Invalid protocol")
+    }
+    if (!ALLOWED_HOSTS.includes(parsed.hostname)) {
+      throw new Error("Invalid hostname")
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
