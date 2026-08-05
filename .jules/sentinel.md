@@ -1,0 +1,4 @@
+## 2024-08-05 - [CRITICAL] Prevent SSRF in Google Maps URL expansion
+**Vulnerability:** The `/api/enrich` endpoint blindly fetched URLs in a redirect loop (`expandUrl`) up to 5 times. An attacker could provide a malicious URL (or a short link resolving to one) that points to internal network services or cloud metadata APIs, leading to a Server-Side Request Forgery (SSRF) vulnerability.
+**Learning:** URL expansion/redirect loops must be validated at *every* step, not just initially. Even if the initial user-provided URL looks benign (e.g., `https://goo.gl/...`), it can redirect to an internal IP (like `http://169.254.169.254`).
+**Prevention:** Implement strict hostname allowlisting (e.g., `isAllowedUrl`) checking against trusted domains (like `google.com`, `maps.app.goo.gl`) and ensure this check runs *inside* the redirect loop before every outgoing `fetch`.
