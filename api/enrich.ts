@@ -19,10 +19,23 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isAllowedGoogleDomain(urlStr: string): boolean {
+  try {
+    const hostname = new URL(urlStr).hostname.toLowerCase()
+    if (hostname === "goo.gl" || hostname === "maps.app.goo.gl") return true
+    return /(^|\.)google\.(com(\.[a-z]{2})?|co\.[a-z]{2}|[a-z]{2,3})$/.test(hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedGoogleDomain(current)) {
+      throw new Error("Invalid or disallowed URL domain")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -112,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json(placeData || {})
   } catch (e) {
-    console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    console.error("[/api/enrich]", e instanceof Error ? e.message : "Unknown error")
+    return res.status(500).json({ error: "An error occurred during place enrichment" })
   }
 }
