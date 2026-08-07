@@ -1,0 +1,3 @@
+## 2024-05-24 - Interactive Elements Need Explicit Focus Classes
+**Learning:** By default, some icon-only buttons lacked explicit focus indicators, making keyboard navigation difficult. Standard interactive elements (like custom close buttons or carousel arrows) often need manual focus affordances if they don't inherit global defaults.
+**Action:** When adding custom icon-only controls, always ensure `focus-visible` classes (e.g., `focus-visible:ring-2 focus-visible:ring-accent`) are applied alongside the `aria-label`.
