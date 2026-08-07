@@ -1,0 +1,3 @@
+## 2024-05-24 - Unnecessary Re-renders from useCallback Anti-Pattern
+**Learning:** Using `useCallback` and immediately invoking it inside the component body (e.g., `const data = myCallback()`) completely defeats the purpose of memoization. The expensive logic inside the callback still runs synchronously on every single render. Furthermore, using `useSearchParams()[0].getAll()` returns a new array reference on every render, which will trigger continuous re-evaluations if used directly in a dependency array.
+**Action:** Always use `useMemo` for synchronously derived state instead of `useCallback`. When deriving state from URL array parameters, memoize the raw array explicitly or stringify it for the dependency array to avoid breaking the memoization cache.
