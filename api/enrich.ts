@@ -19,14 +19,43 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate URL protocol and hostname to prevent SSRF vulnerabilities */
+function validateGmapsUrl(urlString: string): string {
+  let urlObj: URL
+  try {
+    urlObj = new URL(urlString)
+  } catch {
+    throw new Error("Invalid URL format")
+  }
+
+  if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+    throw new Error("Invalid URL protocol")
+  }
+
+  const host = urlObj.hostname
+  const isValidHost =
+    host === "maps.app.goo.gl" ||
+    host === "goo.gl" ||
+    host === "www.google.com" ||
+    host === "google.com" ||
+    host === "maps.google.com" ||
+    host.endsWith(".google.com")
+
+  if (!isValidHost) {
+    throw new Error("Invalid URL hostname")
+  }
+
+  return urlObj.toString()
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
-  let current = url
+  let current = validateGmapsUrl(url)
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+    current = validateGmapsUrl(new URL(loc, current).toString())
   }
   return current
 }
@@ -113,6 +142,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message.startsWith("Invalid URL")) {
+      return res.status(400).json({ error: "Invalid Maps URL provided" })
+    }
+    return res.status(500).json({ error: "An error occurred during place enrichment" })
   }
 }
