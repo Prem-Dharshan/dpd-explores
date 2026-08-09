@@ -1,0 +1,4 @@
+## 2025-02-14 - SSRF via Unvalidated Redirect Loops
+**Vulnerability:** The `/api/enrich` endpoint accepted user-provided URLs and followed redirects using `fetch(current, { redirect: "manual" })` in a loop, without validating the destination protocol or hostname at each step. This allowed SSRF attacks by passing an initial allowed URL that redirected to internal services or sensitive local endpoints (e.g. `file://` or `http://localhost`).
+**Learning:** Redirect loops are dangerous because checking only the initial URL is insufficient. The destination URL must be re-validated at *every step* of a redirect chain to prevent SSRF or protocol smuggling.
+**Prevention:** Always parse and explicitly validate both the protocol (allow only `http:`/`https:`) and the hostname (using a strict allowlist if applicable) inside the redirect loop before making the next outbound request.
