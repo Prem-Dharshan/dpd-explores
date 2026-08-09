@@ -1,0 +1,5 @@
+## 2024-05-18 - Avoid useCallback for synchronously derived state & handle React Router useSearchParams instability
+
+**Learning:** Using `useCallback` to compute derived state and immediately calling it inside the render body completely defeats the purpose of memoization, causing the expensive computation (like filtering and sorting arrays) to run on every single render regardless of dependencies. Furthermore, React Router's `useSearchParams()[0].getAll()` returns a new array reference on every render, which will break any correctly implemented `useMemo` if passed directly into the dependency array.
+
+**Action:** Always use `useMemo` directly for synchronously derived state instead of `useCallback`. When using `useSearchParams()[0].getAll()`, stringify the array outside the memo block, pass the stringified variable into the dependency array, and use `// eslint-disable-next-line react-hooks/exhaustive-deps` to bypass the linter warning about the missing raw array, ensuring the memo actually caches.
