@@ -1,0 +1,3 @@
+## 2026-08-09 - Accessible Image Carousels in DPD Explores
+**Learning:** The image carousel in `PlaceDetail.tsx` used unlabelled buttons and indicator dots. Furthermore, the indicator dots were implemented as a collection of standalone buttons without grouping semantics, which is suboptimal for screen readers navigating a carousel/tablist pattern.
+**Action:** Added `role="tablist"` to the dot container and `role="tab"` + `aria-selected` + `aria-label` to the dots. Added explicit `aria-label` to "Previous photo" and "Next photo" buttons. Ensure that all future carousel or tab-like components use proper WAI-ARIA roles (`tablist`, `tab`, `tabpanel`) for cohesive screen reader navigation.

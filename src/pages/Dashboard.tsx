@@ -63,7 +63,8 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
             window.open(getGmapsUrl(place), "_blank", "noopener")
           }}
           title="Open in Google Maps"
-          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110"
+          aria-label="Open in Google Maps"
+          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           <GmapsIcon className="h-[18px]" />
         </button>
