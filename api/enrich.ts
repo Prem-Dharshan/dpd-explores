@@ -19,14 +19,38 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const ALLOWED_DOMAINS = [
+  "maps.app.goo.gl",
+  "goo.gl",
+  "www.google.com",
+  "google.com",
+  "maps.google.com",
+]
+
+function isValidGmapsUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+    return ALLOWED_DOMAINS.includes(u.hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isValidGmapsUrl(current)) {
+      throw new Error("Invalid URL or domain")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
+  }
+  if (!isValidGmapsUrl(current)) {
+    throw new Error("Invalid URL or domain after redirect")
   }
   return current
 }
@@ -113,6 +137,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
