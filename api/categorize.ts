@@ -18,41 +18,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { name, address, place_type, notes, comment } = req.body || {}
   if (!name) return res.status(400).json({ error: "name is required" })
 
-  const prompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
-
-Given this place:
-Name: ${name}
-Address: ${address || "Unknown"}
-Place Type: ${place_type || "Unknown"}
-User Notes: ${notes || "None"}
-User Comment: ${comment || "None"}
-
-Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
-{
-  "cuisine_type": "string (empty for non-food places)",
-  "cuisine_tags": ["string"],
-  "diet_type": "veg | nonveg | both",
-  "alcohol_served": "yes | no | byob | unknown",
-  "place_type": "restaurant | cafe | bar | bakery | dessert | dhaba | food_truck | fine_dining | adventure | gaming | nature | beach | trek | park | museum | arts_culture | heritage | viewpoint | nightlife | shopping | wellness | stay | explore_spot | other",
-  "occasion": ["date", "family", "friends", "solo", "business", "celebration", "quick_bite"],
-  "best_for_time": ["breakfast", "brunch", "lunch", "snack", "dinner", "late_night", "early_morning"],
-  "ambience": ["rooftop", "cozy", "loud", "quiet", "outdoor", "live_music", "indoor"],
-  "vibe": ["romantic", "lively", "chill", "instagrammable", "old_school", "hidden_gem", "touristy"],
-  "signature_dishes": ["string (empty for non-food places)"],
-  "must_try": "string or empty (for experiences: the highlight activity)",
-  "wishlist_priority": "high | medium | low",
-  "confidence": 0.0
-}
-
-For non-food places (treks, museums, arcades...) leave cuisine fields and signature_dishes empty and pick the right place_type. Only include values you are confident about. Use empty arrays for unknown fields.`
-
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "moonshotai/kimi-k2-instruct",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.\n\nReturn ONLY a valid JSON object (no markdown, no explanation) with these fields:\n{\n  \"cuisine_type\": \"string (empty for non-food places)\",\n  \"cuisine_tags\": [\"string\"],\n  \"diet_type\": \"veg | nonveg | both\",\n  \"alcohol_served\": \"yes | no | byob | unknown\",\n  \"place_type\": \"restaurant | cafe | bar | bakery | dessert | dhaba | food_truck | fine_dining | adventure | gaming | nature | beach | trek | park | museum | arts_culture | heritage | viewpoint | nightlife | shopping | wellness | stay | explore_spot | other\",\n  \"occasion\": [\"date\", \"family\", \"friends\", \"solo\", \"business\", \"celebration\", \"quick_bite\"],\n  \"best_for_time\": [\"breakfast\", \"brunch\", \"lunch\", \"snack\", \"dinner\", \"late_night\", \"early_morning\"],\n  \"ambience\": [\"rooftop\", \"cozy\", \"loud\", \"quiet\", \"outdoor\", \"live_music\", \"indoor\"],\n  \"vibe\": [\"romantic\", \"lively\", \"chill\", \"instagrammable\", \"old_school\", \"hidden_gem\", \"touristy\"],\n  \"signature_dishes\": [\"string (empty for non-food places)\"],\n  \"must_try\": \"string or empty (for experiences: the highlight activity)\",\n  \"wishlist_priority\": \"high | medium | low\",\n  \"confidence\": 0.0\n}\n\nFor non-food places (treks, museums, arcades...) leave cuisine fields and signature_dishes empty and pick the right place_type. Only include values you are confident about. Use empty arrays for unknown fields."
+          },
+          {
+            role: "user",
+            content: `Given this place:\nName: ${name}\nAddress: ${address || "Unknown"}\nPlace Type: ${place_type || "Unknown"}\nUser Notes: ${notes || "None"}\nUser Comment: ${comment || "None"}`
+          }
+        ],
         temperature: 0.2,
       }),
     })
@@ -63,6 +44,6 @@ For non-food places (treks, museums, arcades...) leave cuisine fields and signat
     return res.status(200).json(JSON.parse(stripJsonFences(content)))
   } catch (e) {
     console.error("[/api/categorize]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
