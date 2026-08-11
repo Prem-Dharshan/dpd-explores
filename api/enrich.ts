@@ -23,6 +23,15 @@ const FIELDS = [
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    const u = new URL(current)
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      throw new Error("Invalid protocol")
+    }
+    const hostname = u.hostname
+    if (!["google.com", "goo.gl"].some(h => hostname === h || hostname.endsWith(`.${h}`))) {
+      throw new Error("Invalid hostname")
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -112,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json(placeData || {})
   } catch (e) {
-    console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    console.error("[/api/enrich]", e instanceof Error ? e.message : "Unknown error")
+    return res.status(500).json({ error: "An error occurred while processing the request" })
   }
 }
