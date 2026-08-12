@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -33,7 +33,7 @@ function PlaceholderPhoto({ name }: { name: string }) {
   )
 }
 
-function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean | null }) {
+const PlaceCard = React.memo(function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean | null }) {
   const photo = place.photo_references?.[0]
   return (
     <Link
@@ -109,7 +109,7 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
       </div>
     </Link>
   )
-}
+})
 
 const SORT_OPTIONS = [
   { value: "recently_added", label: "Recently Added" },
@@ -185,8 +185,14 @@ export function Dashboard() {
     })()
   }, [user, navigate])
 
+  // Optimization: useMemo instead of useCallback that gets called every render
+  // useSearchParams()[0].getAll() returns a new array reference every render, breaking memoization.
+  // We stringify the arrays to use as dependencies, preventing unnecessary recalculations.
+  const vibeFilterStr = JSON.stringify(vibeFilter)
+  const occasionFilterStr = JSON.stringify(occasionFilter)
+
   // Filter + sort
-  const filtered = useCallback(() => {
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +225,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, vibeFilterStr, occasionFilterStr, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
