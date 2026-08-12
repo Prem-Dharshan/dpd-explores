@@ -23,6 +23,27 @@ const FIELDS = [
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    let parsed: URL
+    try {
+      parsed = new URL(current)
+    } catch {
+      break
+    }
+
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      break
+    }
+
+    // Only allow maps.app.goo.gl initially or explicitly google owned domains during redirects
+    const host = parsed.hostname
+    const isGoogle = host === "google.com" ||
+                     host.endsWith(".google.com") ||
+                     /^(www\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(host)
+
+    if (host !== "maps.app.goo.gl" && !isGoogle) {
+      break
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +134,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred during enrichment" })
   }
 }
