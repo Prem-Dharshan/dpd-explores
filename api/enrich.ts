@@ -23,6 +23,28 @@ const FIELDS = [
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    let u: URL
+    try {
+      u = new URL(current)
+    } catch {
+      throw new Error("Invalid URL")
+    }
+
+    // SECURITY: Prevent SSRF by enforcing safe protocols
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      throw new Error("Invalid protocol")
+    }
+
+    // SECURITY: Prevent SSRF by validating against a strict allowlist of Google domains
+    const h = u.hostname
+    const isGoogle = h === "maps.app.goo.gl" ||
+                     h.endsWith(".google.com") ||
+                     /^(www\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(h)
+
+    if (!isGoogle) {
+      throw new Error("Invalid hostname")
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +135,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && (e.message === "Invalid URL" || e.message === "Invalid protocol" || e.message === "Invalid hostname")) {
+      return res.status(400).json({ error: "Invalid Google Maps link provided" })
+    }
+    return res.status(500).json({ error: "An error occurred during place enrichment" })
   }
 }
