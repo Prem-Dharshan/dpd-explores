@@ -1,0 +1,4 @@
+## 2026-08-15 - Fix SSRF and Information Leakage in Google Maps URL expansion
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs for expansion, potentially allowing Server-Side Request Forgery (SSRF) if an attacker provided an internal network URL or metadata service IP. Furthermore, the endpoint exposed raw `String(e)` errors in catch blocks, leading to information leakage.
+**Learning:** The URL expansion logic blindly fetched whatever URL was provided by the user. By expanding the allowed Google domains to include `maps.google.com` and `consent.google.com` via regex, we can maintain functionality while blocking SSRF.
+**Prevention:** Always validate and whitelist protocols (http/https) and hostnames before making server-side fetch requests with user-provided URLs. Sanitize server error responses to avoid leaking stack traces or internal errors.
