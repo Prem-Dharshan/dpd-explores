@@ -1,0 +1,3 @@
+## 2024-03-24 - [Avoid `getAll` breaking memoization in Dashboard]
+**Learning:** In React Router, `useSearchParams()[0].getAll()` returns a new array reference on every render. To prevent breaking memoization, avoid `.join(',')` and memoize the raw array explicitly. For synchronously derived state, use `useMemo` directly instead of invoking a `useCallback` on every render.
+**Action:** Stringify the array into a separate variable before the dependency list, pass the stringified variable into the dependency list of `useMemo`/`useCallback`, and bypass the eslint exhaustive-deps warning to preserve memoization without causing excessive re-renders.
