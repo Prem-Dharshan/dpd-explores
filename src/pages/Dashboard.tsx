@@ -340,7 +340,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button onClick={() => { setHighlight(null); setMoodInput("") }} aria-label="Clear highlight" className="text-ink-secondary hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded-sm">
                   <X className="w-4 h-4" />
                 </button>
               )}
