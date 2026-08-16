@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for Icon-only UI Controls
+**Learning:** Found a pattern of missing `aria-label` and `focus-visible` attributes on custom icon-only UI controls, particularly utility-classed interactive elements like carousel arrows, dots, and modal close buttons.
+**Action:** When working on UI components or performing UX reviews, actively check for and add explicit `aria-label`s and `focus-visible` styles (e.g., `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded-sm`) to ensure all interactive elements are fully accessible to keyboard navigators and screen readers.
