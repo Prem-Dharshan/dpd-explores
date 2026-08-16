@@ -1,0 +1,4 @@
+## 2023-10-25 - Fix SSRF and Information Leakage in API
+**Vulnerability:** The `/api/enrich` endpoint accepted arbitrary URLs in the `url` body parameter and fetched them directly in `expandUrl` without validating the protocol or domain, allowing Server-Side Request Forgery (SSRF) and potential internal network scans or bypassing network restrictions. Additionally, the catch block blindly leaked raw error stacks (`String(e)`) to the client on failure.
+**Learning:** Naively expanding shortlinks dynamically poses significant SSRF risks, and Vercel functions catch blocks commonly expose raw errors if not explicitly transformed into generic messages.
+**Prevention:** Always implement strict protocol verification (only `http:` and `https:`) and whitelist trusted hostnames (using precise domains, correct `endsWith` usage for subdomains, or exact regex matches for regional TLDs). Catch blocks must fail securely with 5xx generic errors instead of raw exceptions.
