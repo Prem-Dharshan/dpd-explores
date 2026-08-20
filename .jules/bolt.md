@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid useCallback for derived state & React Router getAll() array references]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render, which silently breaks React memoization. Furthermore, wrapping synchronously derived state in `useCallback` and invoking it in the render body means the expensive computation still runs on *every single render*.
+**Action:** Always use `useMemo` for derived state. To preserve memoization when using `getAll()`, stringify the array output into a primitive variable (e.g. `JSON.stringify()`) before using it in the `useMemo` dependency array, bypassing the linter with `// eslint-disable-next-line react-hooks/exhaustive-deps`.
