@@ -19,10 +19,29 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate that a URL is a permitted Google Maps domain to prevent SSRF */
+function isAllowedGoogleDomain(urlStr: string): boolean {
+  try {
+    const url = new URL(urlStr)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+    const h = url.hostname
+    if (h === "maps.app.goo.gl") return true
+    if (h.endsWith(".google.com")) return true
+    // Match regional domains like google.co.in, google.co.uk, www.google.fr
+    if (/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(h)) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedGoogleDomain(current)) {
+      throw new Error("Invalid URL: Not a permitted Google Maps domain")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -113,6 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    // Return a generic error to avoid exposing internal details (e.g. stack trace, SSRF helper exception msg)
+    return res.status(500).json({ error: "An error occurred while processing the request" })
   }
 }
