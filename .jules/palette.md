@@ -1,0 +1,3 @@
+## 2023-10-27 - Non-Semantic Elements as Buttons
+**Learning:** Using `<img>` tags as clickable avatars without semantic roles or keyboard events leaves keyboard and screen reader users unable to interact with the sign-out function, a common accessibility oversight for user avatars.
+**Action:** When making non-semantic elements clickable (like `img` or `div`), always ensure they include `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Enter/Space), and visible focus states (e.g., `focus-visible:ring-2 focus-visible:outline-none`). Alternatively, wrap the image in a native `<button>` element.
