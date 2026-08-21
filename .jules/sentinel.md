@@ -1,0 +1,4 @@
+## 2025-02-27 - Server-Side Request Forgery (SSRF) and Information Disclosure in enrichment API
+**Vulnerability:** A manual redirect follower in `api/enrich.ts` (`expandUrl`) fetched arbitrary attacker-controlled subdomains like `google.attacker.com` due to lack of domain validation. Also, exceptions caught during enrichment exposed raw stack traces/errors via `String(e)` in HTTP 500 JSON responses.
+**Learning:** Manual redirect-following utilities are prime targets for SSRF. Naive string matching or lack of strict protocol/domain validation allows bypasses.
+**Prevention:** Implement strict protocol (`http:`/`https:`) and precise regex domain matching for allowed hosts (`isValidGoogleMapsUrl`) on initial URLs and during each hop. Return generic error messages for 500 status codes rather than `String(e)` or raw exception data to avoid Information Exposure.
