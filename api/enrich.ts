@@ -19,6 +19,22 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isValidGoogleUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+    const hostname = url.hostname
+
+    if (hostname === "maps.app.goo.gl") return true
+    if (hostname === "google.com" || hostname.endsWith(".google.com")) return true
+    if (/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(hostname)) return true
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
@@ -27,6 +43,9 @@ async function expandUrl(url: string): Promise<string> {
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
+    if (!isValidGoogleUrl(current)) {
+        throw new Error("Invalid redirect URL detected.")
+    }
   }
   return current
 }
@@ -62,7 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // A pasted Google Maps link: expand + parse it for the best lookup keys
     if (url && typeof url === "string") {
-      const expanded = await expandUrl(url.trim())
+      const trimmedUrl = url.trim()
+      if (!isValidGoogleUrl(trimmedUrl)) {
+        return res.status(400).json({ error: "Invalid URL provided. Only Google Maps URLs are allowed." })
+      }
+      const expanded = await expandUrl(trimmedUrl)
       const parsed = parseGmapsUrl(expanded)
       placeId = placeId || parsed.placeId
       name = name || parsed.name
@@ -112,7 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json(placeData || {})
   } catch (e) {
-    console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    console.error("[/api/enrich]", e instanceof Error ? e.message : "Unknown error")
+    return res.status(500).json({ error: "An error occurred during enrichment" })
   }
 }
