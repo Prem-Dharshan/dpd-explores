@@ -1,0 +1,3 @@
+## 2025-02-18 - [Prevent unnecessary array recomputations with URLSearchParams]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render in React Router. This breaks memoization if passed directly into dependency arrays, causing cascading performance issues (e.g. re-running costly filtering/sorting functions on every render).
+**Action:** When extracting arrays from URL search params, memoize the array by using a separate stringified value (`JSON.stringify()`) in the `useMemo` dependency array (and use `// eslint-disable-next-line react-hooks/exhaustive-deps` to bypass the ESLint warning). Additionally, use `useMemo` for derived states like filtering instead of invoking a `useCallback` function directly during render.
