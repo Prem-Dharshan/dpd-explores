@@ -1,0 +1,4 @@
+## 2025-03-02 - SSRF Vulnerability in Manual URL Redirects
+**Vulnerability:** The `expandUrl` function in `api/enrich.ts` followed HTTP redirects blindly when using `fetch` with `redirect: "manual"`. If an attacker provided a shortlink that redirected to an internal IP address or internal service, the server would follow the redirect and make a request to the internal destination.
+**Learning:** Even if the initial URL looks innocuous, the `Location` header returned by a manual redirect must be strictly validated before following it. Attackers can control redirect chains to bypass initial URL validation or to probe internal networks (SSRF).
+**Prevention:** Implement strict protocol and domain validation for both the initial URL and every single URL extracted from a `Location` header during manual redirect following. Return 400 for validation errors without leaking sensitive stack traces.
