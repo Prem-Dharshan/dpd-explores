@@ -19,14 +19,44 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate if a URL is a legitimate Google Maps URL */
+function isValidGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+
+    const host = url.hostname
+    // Exact match for the shortlink domain
+    if (host === "maps.app.goo.gl") return true
+
+    // Strict match for google.com and regional domains (e.g., google.co.in, google.de)
+    // We allow www., maps., consent., or no subdomain.
+    const googleDomainRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    return googleDomainRegex.test(host)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
+
+  if (!isValidGoogleMapsUrl(current)) {
+    throw new Error("Invalid URL: Not a recognized Google Maps domain")
+  }
+
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+
+    const nextUrl = new URL(loc, current).toString()
+    if (!isValidGoogleMapsUrl(nextUrl)) {
+      throw new Error("Invalid redirect: Destination is not a recognized Google domain")
+    }
+
+    current = nextUrl
   }
   return current
 }
@@ -113,6 +143,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message.startsWith("Invalid ")) {
+      // Return 400 for specific client validation errors (like invalid URL or redirect)
+      return res.status(400).json({ error: e.message })
+    }
+    // Return generic 500 for other errors to prevent leaking stack traces/internals
+    return res.status(500).json({ error: "An internal error occurred" })
   }
 }
