@@ -1,0 +1,3 @@
+## 2024-05-19 - Dashboard Filtering Re-Renders
+**Learning:** React Router's `searchParams.getAll()` returns a new array reference on every render. If these arrays are used directly as dependencies in hooks (like `useCallback` or `useMemo`), the hooks will continuously recalculate. Furthermore, invoking a `useCallback` immediately to compute derived state defeats the purpose of memoization.
+**Action:** Use `useMemo` to compute derived state and carefully memoize or serialize array dependencies (e.g. `JSON.stringify()`) originating from `searchParams.getAll()` before putting them into dependency arrays.
