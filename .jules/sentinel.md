@@ -1,0 +1,4 @@
+## 2024-05-18 - Fix SSRF and Error Leakage in API Route
+**Vulnerability:** Server-Side Request Forgery (SSRF) during URL expansion in `/api/enrich` due to unconditionally following redirects and generic error leakage from catch blocks exposing internal error strings.
+**Learning:** Naive redirect following (`redirect: "manual"`) without validating every intermediate URL, and allowing broad regex matches like `.startsWith('google.')`, can be abused by attackers to scan internal networks or execute requests against unintended protocols.
+**Prevention:** Always implement explicit protocol validation (`http:`/`https:`) and strict hostname checks (exact matching, strict suffix matching, or precise regexes) on the initial URL *and* every redirect `Location` header. Additionally, fail securely by returning generic errors like `{"error": "An error occurred"}` instead of `String(e)`.
