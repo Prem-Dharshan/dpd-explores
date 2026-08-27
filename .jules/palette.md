@@ -1,0 +1,3 @@
+## 2024-05-19 - Added ARIA labels and focus styles to icon-only controls
+**Learning:** Found that several interactive UI elements (like user avatar as sign out button, photo carousel arrows, and modal close buttons) were missing essential ARIA labels, `role="button"`, and keyboard navigation support, making them inaccessible to screen readers and keyboard users.
+**Action:** Applied `role="button"`, `tabIndex={0}`, `onKeyDown` handlers for interactive non-button elements (`<img>`), and added `aria-label` and `focus-visible` utility classes (`focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none`) to icon-only buttons to ensure they are accessible and visually clear when focused.
