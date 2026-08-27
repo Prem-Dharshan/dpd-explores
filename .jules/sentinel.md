@@ -1,0 +1,4 @@
+## 2024-10-24 - SSRF via Unvalidated Fetch Redirects
+**Vulnerability:** The `/api/enrich` endpoint accepted user-provided URLs and followed redirects (`redirect: "manual"`) using a loop without validating the initial or subsequent URL destinations. This allowed a Server-Side Request Forgery (SSRF) bypass where a safe-looking domain could redirect to an internal or malicious IP.
+**Learning:** Naive use of `fetch` with manual redirect following is dangerous because the `Location` header can point anywhere. Validation must happen at every step of the redirect chain, not just on the initial input.
+**Prevention:** Always implement explicit protocol validation (`http:`, `https:`) and strict hostname validation (exact matches or precise regexes) before every `fetch` call, especially when iterating over redirects.
