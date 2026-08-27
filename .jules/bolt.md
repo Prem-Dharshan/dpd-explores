@@ -1,0 +1,3 @@
+## 2024-05-17 - [Memoizing useSearchParams getAll() array results]
+**Learning:** React Router's `searchParams.getAll()` returns a new array reference on every render, which will break any memoization (like `useMemo` or `useCallback`) if used directly as a dependency. It will cause continuous re-renders and execution of the memoized function.
+**Action:** Always memoize arrays extracted from `searchParams.getAll()`. To satisfy ESLint's `exhaustive-deps` rule safely without creating new objects, stringify the array, store it in a variable, and pass that stringified variable to the dependency array of a `useMemo` block that returns the raw array. Add an `eslint-disable-next-line react-hooks/exhaustive-deps` above the `useMemo` call.
