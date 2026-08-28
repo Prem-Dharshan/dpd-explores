@@ -1,0 +1,4 @@
+## 2024-08-28 - URL Redirect Expansion SSRF Vulnerability
+**Vulnerability:** Server-Side Request Forgery (SSRF) bypass when expanding short Google Maps links. The application fetched user-provided URLs and blindly followed HTTP redirects without validating the target domains.
+**Learning:** Checking the initial input URL is insufficient. Attackers could host a server that initially passes validation (or is trusted) and then redirects via the `Location` header to a malicious internal IP or sensitive internal endpoint, causing the server to fetch it.
+**Prevention:** Implement strict domain and protocol validation for the initial URL and *every* subsequent URL retrieved from the `Location` header before calling `fetch`. For Google subdomains, use robust regex patterns and exact string matching instead of naive `.startsWith` checks.
