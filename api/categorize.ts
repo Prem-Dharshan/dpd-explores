@@ -63,6 +63,6 @@ For non-food places (treks, museums, arcades...) leave cuisine fields and signat
     return res.status(200).json(JSON.parse(stripJsonFences(content)))
   } catch (e) {
     console.error("[/api/categorize]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
