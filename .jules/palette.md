@@ -1,0 +1,3 @@
+## 2024-08-30 - Non-semantic Elements as Interactive Buttons
+**Learning:** When non-semantic elements like `img` tags are used as buttons (e.g., user avatars for a sign-out action), relying solely on `onClick` makes them inaccessible via keyboard navigation. They lack inherent focusability, role semantics, and keyboard event handling.
+**Action:** Always ensure full keyboard accessibility affordances for non-semantic buttons by adding `role="button"`, `tabIndex={0}`, an `onKeyDown` handler that fires on 'Enter' and 'Space', and explicit `focus-visible` utility classes (e.g., `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none`) for clear visual focus. Also, remember to add `aria-label` when the action is not visually apparent as text.
