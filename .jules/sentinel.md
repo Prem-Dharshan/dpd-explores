@@ -1,0 +1,4 @@
+## 2024-05-15 - [SSRF in expandUrl]
+**Vulnerability:** The `expandUrl` function in `api/enrich.ts` manually followed URL redirects using `fetch(url, { redirect: "manual" })` without verifying that the redirected URLs maintained a safe domain or protocol. This allowed an attacker to provide a safe initial URL that redirected to internal IPs or sensitive internal services.
+**Learning:** Even when verifying an initial URL, all subsequent URLs encountered during a manual redirect loop must also be explicitly validated against an allowlist and strict protocol rules before making further requests.
+**Prevention:** Implement strict protocol (`http:` / `https:`) and domain allowlisting, and invoke the validation logic both on the initial user-provided URL and inside the redirect loop for every new URL extracted from a `Location` header.
