@@ -1,0 +1,3 @@
+## 2025-02-25 - [Silent React Router Memoization Breakage]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render in React Router. Passing this array directly into a dependency array (like in `useCallback` or `useMemo`) will silently break standard React memoization and trigger unnecessary computations.
+**Action:** Always assign the stringified array (e.g. `const arrayStr = JSON.stringify(rawArray)`) to a separate variable, pass that variable to the dependency array, and use `// eslint-disable-next-line react-hooks/exhaustive-deps` to bypass the missing raw array dependency warning when memoizing derived state that depends on `getAll()`.
