@@ -1,0 +1,3 @@
+## 2024-05-18 - [Fix React Router array reference breaking]
+**Learning:** React Router's `searchParams.getAll()` returns a new array reference on every render. Relying on this directly inside the dependency array of a `useCallback` or `useMemo` causes continuous invalidation of memoization, leading to unnecessary re-computation (in this case, an O(n) array filter over a potentially large dataset of places).
+**Action:** Extract arrays from `searchParams.getAll()` into explicitly stringified variables (e.g. `JSON.stringify(arr)`) for use inside the dependency array. Additionally, safely replace synchronous data transformation using `useCallback` plus a direct call with a direct `useMemo` computation.
