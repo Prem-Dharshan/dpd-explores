@@ -19,10 +19,28 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+const GOOGLE_DOMAIN_REGEX = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+
+function isSafeUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+    if (u.hostname === "maps.app.goo.gl") return true
+    if (u.hostname === "google.com" || u.hostname.endsWith(".google.com")) return true
+    if (GOOGLE_DOMAIN_REGEX.test(u.hostname)) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isSafeUrl(current)) {
+      throw new Error("Invalid URL domain or protocol")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
@@ -62,7 +80,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // A pasted Google Maps link: expand + parse it for the best lookup keys
     if (url && typeof url === "string") {
-      const expanded = await expandUrl(url.trim())
+      const trimmedUrl = url.trim()
+      if (!isSafeUrl(trimmedUrl)) {
+        return res.status(400).json({ error: "Invalid URL domain or protocol" })
+      }
+      const expanded = await expandUrl(trimmedUrl)
       const parsed = parseGmapsUrl(expanded)
       placeId = placeId || parsed.placeId
       name = name || parsed.name
@@ -113,6 +135,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message === "Invalid URL domain or protocol") {
+      return res.status(400).json({ error: "Invalid URL" })
+    }
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
