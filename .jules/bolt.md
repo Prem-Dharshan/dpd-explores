@@ -1,0 +1,3 @@
+## 2026-09-02 - [Prevent Unnecessary Re-renders from URL Search Params]
+**Learning:** In React Router, `useSearchParams()[0].getAll()` returns a new array reference on every render, which defeats memoization. Additionally, a `useCallback` followed immediately by invocation on every render does not prevent the computation from running; `useMemo` should be used instead for synchronously derived state.
+**Action:** When filtering data based on search params in React Router, explicitly memoize the raw arrays (e.g., using `JSON.stringify` inside the dependency array alongside `// eslint-disable-next-line react-hooks/exhaustive-deps`) and use `useMemo` directly rather than invoking a `useCallback`.
