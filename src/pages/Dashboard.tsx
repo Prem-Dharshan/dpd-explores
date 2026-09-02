@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -141,8 +141,14 @@ export function Dashboard() {
   const dietFilter = searchParams.get("diet") || "all"
   const sortBy = searchParams.get("sort") || "recently_added"
   const cityFilter = searchParams.get("city") || ""
-  const vibeFilter = searchParams.getAll("vibe")
-  const occasionFilter = searchParams.getAll("occasion")
+
+  const rawVibeFilter = searchParams.getAll("vibe")
+  const vibeFilterStr = JSON.stringify(rawVibeFilter)
+  const vibeFilter = useMemo(() => rawVibeFilter, [vibeFilterStr]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const rawOccasionFilter = searchParams.getAll("occasion")
+  const occasionFilterStr = JSON.stringify(rawOccasionFilter)
+  const occasionFilter = useMemo(() => rawOccasionFilter, [occasionFilterStr]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -185,8 +191,8 @@ export function Dashboard() {
     })()
   }, [user, navigate])
 
-  // Filter + sort
-  const filtered = useCallback(() => {
+  // Filter + sort (memoized to prevent expensive re-renders)
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +225,7 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
