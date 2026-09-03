@@ -1,0 +1,3 @@
+## 2026-09-03 - Added missing ARIA labels and focus states to PlaceDetail
+**Learning:** When implementing complex image carousels or modals using only SVG icons (like ChevronLeft/Right or X), these buttons are completely invisible to screen readers without ARIA labels. Furthermore, standard button elements don't inherently have clear focus indicators when navigating by keyboard.
+**Action:** Always ensure icon-only buttons include an `aria-label` describing their action, and apply Tailwind's `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none` utilities to ensure the focus state is visually distinct and accessible to keyboard users.
