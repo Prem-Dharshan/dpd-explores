@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -185,8 +185,19 @@ export function Dashboard() {
     })()
   }, [user, navigate])
 
+  const vibeFilterStr = JSON.stringify(vibeFilter)
+  const occasionFilterStr = JSON.stringify(occasionFilter)
+
+  // ⚡ Bolt: Performance optimization
+  // What: Replaced useCallback + immediate invocation with useMemo for derived state.
+  // Why: useCallback just memoizes the function reference. Calling it every render caused
+  // the entire array to be copied, filtered, and sorted synchronously on every render.
+  // Impact: Reduces CPU time during render. O(N) operations (filter/sort on potentially large dataset)
+  // are now only performed when actual dependencies change, not every render.
+  // Measurement: Verify faster frame rates and shorter interaction times when typing in the search bar or toggling UI elements.
+
   // Filter + sort
-  const filtered = useCallback(() => {
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +230,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, vibeFilterStr, occasionFilterStr, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
