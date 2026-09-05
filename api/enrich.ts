@@ -19,14 +19,41 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate that a URL belongs to a trusted Google Maps domain */
+function isValidGoogleUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+
+    const hostname = url.hostname
+    // Exact match for the short link domain
+    if (hostname === "maps.app.goo.gl") return true
+    // Strict subdomain match for google.com (prevents google.attacker.com)
+    if (hostname === "google.com" || hostname.endsWith(".google.com")) return true
+    // Regex for regional Google domains (e.g., google.co.in, google.co.uk)
+    const regionalRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    return regionalRegex.test(hostname)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
+  if (!isValidGoogleUrl(current)) {
+    throw new Error("Invalid or untrusted URL provided")
+  }
+
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
+
     current = new URL(loc, current).toString()
+    if (!isValidGoogleUrl(current)) {
+      throw new Error("Redirect to invalid or untrusted URL")
+    }
   }
   return current
 }
@@ -113,6 +140,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred while fetching place data" })
   }
 }
