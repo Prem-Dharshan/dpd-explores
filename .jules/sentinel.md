@@ -1,0 +1,4 @@
+## 2024-05-18 - SSRF Vulnerability in Manual Redirect Chaining
+**Vulnerability:** The `expandUrl` function in `api/enrich.ts` manually followed `Location` headers up to 5 times without validating the URL at each step. This allowed an attacker to provide a safe URL (e.g., a Google domain) that redirects to an internal, malicious IP or service, bypassing initial basic checks.
+**Learning:** When manually handling HTTP redirects using `redirect: "manual"`, validating only the initial input URL is insufficient. Attackers can set up intermediate redirects to internal infrastructure.
+**Prevention:** Always implement strict protocol (`http:`/`https:`) and hostname validation (e.g., exact matches or strictly anchored regexes for domains) before fetching *any* URL, including every subsequent URL extracted from a `Location` header during redirect following.
