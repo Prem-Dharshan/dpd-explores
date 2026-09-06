@@ -1,0 +1,3 @@
+## 2024-09-06 - [React Router useSearchParams Anti-pattern]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render in React Router. Passing this directly to dependency arrays causes unnecessary re-renders. Furthermore, an immediately invoked `useCallback` on every render for expensive calculations defeats the purpose of memoization.
+**Action:** When extracting arrays from search params, wrap them in a `useMemo` dependency by using a separate stringified variable instead of `JSON.stringify` directly in the dependency array. Replace immediately invoked `useCallback` hooks with `useMemo` directly.
