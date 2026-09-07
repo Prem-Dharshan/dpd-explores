@@ -1,0 +1,4 @@
+## 2024-05-18 - SSRF Vulnerability in Google Maps Link Expander
+**Vulnerability:** Server-Side Request Forgery (SSRF) bypass in `/api/enrich.ts` via an unvalidated redirect loop `expandUrl(url)`. An attacker could supply a URL that redirects to internal endpoints.
+**Learning:** Even if the initial user-provided URL is validated, `fetch` with `redirect: "manual"` that follows the `Location` header can be exploited if each subsequent URL is not explicitly validated against the target domain allowlist before the next fetch call.
+**Prevention:** Always validate both the initial URL input and every subsequent redirect URL extracted from the `Location` header against an allowlist (e.g., using strict hostname checks for external APIs) before calling `fetch()`. Use regex or exact matches rather than just `.startsWith` or naive substring matching.
