@@ -19,15 +19,49 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Strictly validate URL to prevent SSRF bypasses */
+function isValidGoogleUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+
+    const host = u.hostname
+
+    // Allow exact shortlink
+    if (host === "maps.app.goo.gl") return true
+
+    // Strict subdomain check
+    if (host.endsWith(".google.com")) return true
+
+    // Check regional domains (e.g. google.co.in)
+    const regionalRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    if (regionalRegex.test(host)) return true
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isValidGoogleUrl(current)) {
+      throw new Error("Invalid or untrusted URL encountered during redirect")
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
+
     current = new URL(loc, current).toString()
   }
+
+  if (!isValidGoogleUrl(current)) {
+    throw new Error("Final redirected URL is invalid or untrusted")
+  }
+
   return current
 }
 
@@ -113,6 +147,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
