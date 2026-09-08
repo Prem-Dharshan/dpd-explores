@@ -1,0 +1,3 @@
+## 2025-05-18 - Improve Avatar Accessibility and ARIA Labels
+**Learning:** Non-semantic elements like `img` when used as buttons need complete keyboard accessibility attributes (`role="button"`, `tabIndex={0}`, `onKeyDown` handlers for Enter/Space). Additionally, icon-only `<button>` elements across the app frequently lack screen-reader labels and require `aria-label` attributes to be accessible. Explicit `focus-visible` utility classes are also necessary for visual focus on both.
+**Action:** When implementing or reviewing icon buttons or images acting as triggers, proactively add `aria-label` for icons and the full suite of keyboard interaction affordances (role, tabIndex, keyboard event handlers, visual focus indicators) for non-semantic elements.
