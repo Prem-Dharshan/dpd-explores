@@ -1,0 +1,4 @@
+## 2025-05-18 - Prevent SSRF in manual fetch redirects
+**Vulnerability:** The `/api/enrich` endpoint expanded URLs manually using `fetch(url, { redirect: "manual" })` and blindly followed `Location` headers without validating if the new URL was safe or pointed to an internal IP.
+**Learning:** Manual redirect handling in `fetch` requires explicit validation of both the initial URL *and* every subsequent URL returned in the `Location` header to prevent open-redirect SSRF bypasses. When validating Google domains, naive string matching (e.g., `startsWith('google.')`) is dangerous as it allows `google.attacker.com`.
+**Prevention:** Implement strict protocol (`http/https`) and hostname validation. Use exact matches for shortlinks, `.endsWith('.google.com')` strictly for subdomains, and precise regexes for regional domains. Apply this validation check before every fetch iteration in the redirect loop.
