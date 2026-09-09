@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid `searchParams.getAll()` breaking memoization]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render, which can cause severe performance issues when passed to `useEffect`, `useCallback`, or `useMemo` dependency arrays by unnecessarily triggering recalculations or effects.
+**Action:** When deriving state from search params synchronously, stringify array filters (e.g., `const stringified = JSON.stringify(vibeFilter)`) to use as dependencies, and bypass the linter using `// eslint-disable-next-line react-hooks/exhaustive-deps`. Additionally, use `useMemo` for derived data like filtering lists rather than returning a `useCallback` function and executing it.
