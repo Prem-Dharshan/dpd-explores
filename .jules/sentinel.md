@@ -1,0 +1,4 @@
+## 2023-10-27 - SSRF Vulnerability in Google Maps URL Enrichment
+**Vulnerability:** Server-Side Request Forgery (SSRF) bypass due to missing protocol and domain validation when manually following redirects extracted from the `Location` header in the `expandUrl` function (`api/enrich.ts`).
+**Learning:** Even if an initial URL is safe (or assumed safe), manually following redirects (`redirect: "manual"`) using the `Location` header opens up an SSRF vector if the redirected URL is not also validated against the allowed domains and protocols. An attacker could use a seemingly safe domain that redirects to a malicious internal IP or sensitive internal service.
+**Prevention:** Strictly validate not only the initial input URL but also every subsequent URL extracted from the `Location` header against an explicit allowlist of domains (e.g., using precise regexes or exact domain matches) and protocols (`http:`, `https:`). Never rely solely on the initial URL's safety.
