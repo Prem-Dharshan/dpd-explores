@@ -1,0 +1,3 @@
+## 2026-09-12 - [React Router searchParams caching]
+**Learning:** In React Router, `useSearchParams().getAll()` returns a new array reference on every render, which breaks memoization for any `useMemo` or `useCallback` that relies on it. A common anti-pattern in the codebase is returning a function from `useCallback` that is immediately invoked every render, negating the benefits of memoization.
+**Action:** When working with array values from `searchParams.getAll()`, explicitly stringify them (e.g., using `JSON.stringify()`) before putting them in dependency arrays. Also, for synchronously derived state, use `useMemo` to cache the result directly, rather than returning a function from `useCallback` that is called immediately.
