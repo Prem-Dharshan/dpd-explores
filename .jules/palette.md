@@ -1,0 +1,3 @@
+## 2024-09-12 - Reusable Focus Ring Pattern for Custom Elements
+**Learning:** In this Tailwind-based design system, non-semantic interactive elements (like the user avatar `<img>` masquerading as a button) or icon-only controls without explicit focus styles completely lose visual feedback during keyboard navigation. Standard `:focus` can be too aggressive for mouse users.
+**Action:** Always apply the explicit `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none` utility combination to any custom interactive element or icon button to ensure WCAG-compliant keyboard focus without degrading the pointer experience. Additionally, non-semantic elements (like `<img>`) must include `role="button"`, `tabIndex={0}`, and an `onKeyDown` handler for 'Enter'/' '.
