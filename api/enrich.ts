@@ -19,15 +19,34 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isSafeGoogleUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr)
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false
+    const host = parsed.hostname
+    const regionalRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    return (
+      host === "maps.app.goo.gl" ||
+      host === "google.com" ||
+      host.endsWith(".google.com") ||
+      regionalRegex.test(host)
+    )
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isSafeGoogleUrl(current)) throw new Error("Invalid URL")
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
   }
+  if (!isSafeGoogleUrl(current)) throw new Error("Invalid URL")
   return current
 }
 
@@ -113,6 +132,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(placeData || {})
   } catch (e) {
     console.error("[/api/enrich]", e)
-    return res.status(500).json({ error: String(e) })
+    if (e instanceof Error && e.message === "Invalid URL") {
+      return res.status(400).json({ error: "Invalid URL provided" })
+    }
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
