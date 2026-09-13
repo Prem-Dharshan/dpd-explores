@@ -1,0 +1,3 @@
+## 2024-11-23 - [Accessible Image Avatars]
+**Learning:** Using non-semantic elements like `img` tags as interactive components (e.g., clickable user avatars) entirely breaks keyboard accessibility and screen reader support unless explicit keyboard event handlers (`onKeyDown`), ARIA roles (`role="button"`), tab indexing (`tabIndex={0}`), and visible focus states are added.
+**Action:** When a design requires an `img` tag to act as a button, either wrap it in an actual `<button>` element or ensure full accessibility parity by explicitly adding `role="button"`, `tabIndex={0}`, `onKeyDown` (for Enter/Space), and `focus-visible` utility classes for keyboard navigation.
