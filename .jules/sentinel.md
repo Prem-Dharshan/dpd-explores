@@ -1,0 +1,4 @@
+## 2024-11-23 - Prevent SSRF in redirect expansion
+**Vulnerability:** The `/api/enrich` endpoint accepted user-provided URLs and followed redirects (`redirect: "manual"`) using `fetch`. If a malicious user provided a URL that initially resolved to a safe domain but later redirected to an internal IP or local network, it would result in a Server-Side Request Forgery (SSRF).
+**Learning:** Naive URL domain checks or relying only on the initial URL are insufficient when following redirects. Every subsequent URL parsed from the `Location` header must also be checked against strict protocol (`http:`/`https:`) and domain allowlists.
+**Prevention:** Implement a rigorous domain validation function (`isValidGmapsUrl`) that correctly accounts for subdomains and regional top-level domains. Apply this function not just on the initial URL, but also on every new redirect URL before attempting to fetch it.
