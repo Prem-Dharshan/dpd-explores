@@ -63,7 +63,8 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
             window.open(getGmapsUrl(place), "_blank", "noopener")
           }}
           title="Open in Google Maps"
-          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110"
+          aria-label="Open in Google Maps"
+          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           <GmapsIcon className="h-[18px]" />
         </button>
@@ -310,14 +311,25 @@ export function Dashboard() {
             <img
               src={user.image}
               alt={user.name || ""}
-              className="w-8 h-8 rounded-full border border-border cursor-pointer"
+              className="w-8 h-8 rounded-full border border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               onClick={handleSignOut}
               title="Click to sign out"
+              role="button"
+              tabIndex={0}
+              aria-label="Sign out"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSignOut()
+                }
+              }}
             />
           ) : (
             <button
               onClick={handleSignOut}
-              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              aria-label="Sign out"
+              title="Click to sign out"
             >
               {user?.email?.charAt(0).toUpperCase()}
             </button>
@@ -340,7 +352,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Clear mood search">
                   <X className="w-4 h-4" />
                 </button>
               )}
