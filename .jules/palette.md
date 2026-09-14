@@ -1,0 +1,3 @@
+## 2026-09-14 - Interactive Elements and Semantic Roles
+**Learning:** Using non-semantic elements like `img` for interactive components (like user avatars for sign out) requires not just `role="button"` and `tabIndex={0}`, but also an `onKeyDown` handler to support Enter/Space activation, and explicit `aria-label` for screen readers. Icon-only buttons (like modals closes or maps links) must have `aria-label`s and visible focus states (e.g. `focus-visible:ring-2`) for true keyboard accessibility.
+**Action:** Next time, when building custom interactive elements, always consider the complete keyboard accessibility trio: role, focusability, and keyboard event handlers. Ensure all icon-only buttons receive an `aria-label` and visible focus outline.
