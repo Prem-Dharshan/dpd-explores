@@ -18,14 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { name, address, place_type, notes, comment } = req.body || {}
   if (!name) return res.status(400).json({ error: "name is required" })
 
-  const prompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
-
-Given this place:
-Name: ${name}
-Address: ${address || "Unknown"}
-Place Type: ${place_type || "Unknown"}
-User Notes: ${notes || "None"}
-User Comment: ${comment || "None"}
+  const systemPrompt = `You are an expert on places and experiences in India — restaurants and cafes, but also adventure activities, gaming arcades, nature spots, beaches, treks, museums, heritage sites, nightlife, shopping and wellness. Especially familiar with Chennai, Coimbatore, Mumbai, Delhi, Bangalore.
 
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {
@@ -46,13 +39,23 @@ Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 
 For non-food places (treks, museums, arcades...) leave cuisine fields and signature_dishes empty and pick the right place_type. Only include values you are confident about. Use empty arrays for unknown fields.`
 
+  const userPrompt = `Given this place:
+Name: ${name}
+Address: ${address || "Unknown"}
+Place Type: ${place_type || "Unknown"}
+User Notes: ${notes || "None"}
+User Comment: ${comment || "None"}`
+
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "moonshotai/kimi-k2-instruct",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
         temperature: 0.2,
       }),
     })
@@ -63,6 +66,6 @@ For non-food places (treks, museums, arcades...) leave cuisine fields and signat
     return res.status(200).json(JSON.parse(stripJsonFences(content)))
   } catch (e) {
     console.error("[/api/categorize]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
