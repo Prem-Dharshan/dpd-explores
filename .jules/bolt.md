@@ -1,0 +1,3 @@
+## 2024-05-18 - Replacing useCallback with useMemo for Derived State & Handling React Router Arrays
+**Learning:** Returning values directly from a `useCallback` inside a functional component body executes it on every single render. We should use `useMemo` for derived synchronously computed states. Additionally, React Router's `useSearchParams()[0].getAll()` returns a new array reference on every render, which can break memoization unless properly stringified and suppressed in the dependency array.
+**Action:** Next time, always implement derived filtering/sorting using `useMemo` and stringify URL search param arrays properly in dependencies.
