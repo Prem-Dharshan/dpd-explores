@@ -34,22 +34,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }))
 
   try {
+    const systemPrompt = `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
+Return ONLY a JSON array of place IDs: ["uuid1", "uuid2", ...]
+Do not explain. Only return the array.
+
+Available places:
+${JSON.stringify(placesContext, null, 2)}`
+
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "moonshotai/kimi-k2-instruct",
-        messages: [{
-          role: "user",
-          content: `You are a personal recommender for places and experiences in India — food spots, adventures, nature, culture, nightlife and more. Based on the user's mood, return the top 5 place IDs that best match.
-Return ONLY a JSON array of place IDs: ["uuid1", "uuid2", ...]
-Do not explain. Only return the array.
-
-Available places:
-${JSON.stringify(placesContext, null, 2)}
-
-User request: ${moodPrompt}`,
-        }],
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `User request: ${moodPrompt}` }
+        ],
         temperature: 0.7,
       }),
     })
@@ -60,6 +60,6 @@ User request: ${moodPrompt}`,
     return res.status(200).json({ placeIds: JSON.parse(stripJsonFences(content)) })
   } catch (e) {
     console.error("[/api/recommend]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
