@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for Image Avatars Used as Buttons
+**Learning:** Found a pattern where interactive, non-semantic elements like `<img>` tags are used as buttons (e.g., user avatars for sign-out) but lack full keyboard accessibility affordances, making them unusable for keyboard and screen reader users.
+**Action:** When an `<img>` or other non-interactive element serves as a button, always add `role="button"`, `tabIndex={0}`, an `onKeyDown` handler for Enter/Space, and explicit `focus-visible` utility classes (e.g., `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none`) to ensure visual focus and operability.

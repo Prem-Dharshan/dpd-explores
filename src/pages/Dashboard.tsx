@@ -310,14 +310,23 @@ export function Dashboard() {
             <img
               src={user.image}
               alt={user.name || ""}
-              className="w-8 h-8 rounded-full border border-border cursor-pointer"
+              className="w-8 h-8 rounded-full border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               onClick={handleSignOut}
               title="Click to sign out"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSignOut()
+                }
+              }}
             />
           ) : (
             <button
               onClick={handleSignOut}
-              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
+              aria-label="Sign out"
+              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
             >
               {user?.email?.charAt(0).toUpperCase()}
             </button>
