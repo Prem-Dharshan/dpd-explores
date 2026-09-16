@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -186,7 +186,14 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  // ⚡ Bolt: Stable references for useMemo to avoid breaking memoization.
+  // useSearchParams().getAll() returns a new array reference on every render.
+  const stringifiedVibeFilter = JSON.stringify(vibeFilter)
+  const stringifiedOccasionFilter = JSON.stringify(occasionFilter)
+
+  // ⚡ Bolt: Replaced immediately-invoked useCallback with useMemo.
+  // This prevents the expensive O(N) filtering and sorting from running on every single render.
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +226,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, stringifiedVibeFilter, stringifiedOccasionFilter, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
