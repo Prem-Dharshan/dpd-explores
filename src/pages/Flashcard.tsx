@@ -67,6 +67,7 @@ function TagChip({
       {onRemove && (
         <button
           onClick={onRemove}
+          aria-label="Remove tag"
           className="opacity-50 hover:opacity-100 transition-opacity ml-0.5"
         >
           <X className="w-3 h-3" />
@@ -448,12 +449,13 @@ export function Flashcard() {
                           className="h-7 px-2 rounded-full border border-accent bg-surface text-[11px] text-ink outline-none w-28"
                           placeholder="Add tag..."
                         />
-                        <button onClick={() => addTag(field)} className="text-accent"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setAddingField(null)} className="text-ink-tertiary"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => addTag(field)} aria-label="Confirm add tag" className="text-accent"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setAddingField(null)} aria-label="Cancel add tag" className="text-ink-tertiary"><X className="w-3.5 h-3.5" /></button>
                       </div>
                     ) : (
                       <button
                         onClick={() => setAddingField(field)}
+                        aria-label="Add new tag"
                         className="h-7 w-7 rounded-full border border-dashed border-border-strong flex items-center justify-center text-ink-tertiary hover:border-accent hover:text-accent transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />

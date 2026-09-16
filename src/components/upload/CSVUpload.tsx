@@ -228,6 +228,7 @@ export function CSVUpload({ userId, onSuccess, onError }: Props) {
           </div>
           <button
             onClick={() => setFile(null)}
+            aria-label="Remove selected file"
             className="text-ink-tertiary hover:text-ink transition-colors"
           >
             <X className="w-4 h-4" />
