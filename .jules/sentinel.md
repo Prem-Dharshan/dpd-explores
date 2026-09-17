@@ -1,0 +1,4 @@
+## 2024-05-24 - CRITICAL: SSRF Vulnerability in Google Maps URL Expansion
+**Vulnerability:** Server-Side Request Forgery (SSRF) bypass in `/api/enrich` endpoint via `expandUrl` function. User-provided URLs were fetched with manual redirects, and subsequent redirect locations were followed without validation.
+**Learning:** Naively following HTTP redirects from a user-supplied URL allows an attacker to bypass initial validation (if any). A safe domain could redirect the server to query internal networks or sensitive endpoints.
+**Prevention:** Always implement explicit protocol validation (`http:`/`https:`) and strict hostname verification on *both* the initial URL and *every* subsequent URL extracted from the `Location` header. When whitelisting Google domains, use exact matches or strict regexes (e.g., `/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/`) instead of naive `.startsWith()`.
