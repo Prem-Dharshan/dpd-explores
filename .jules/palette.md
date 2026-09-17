@@ -1,0 +1,3 @@
+## 2024-10-25 - Accessible Avatar Button Pattern
+**Learning:** When non-semantic elements like `<img>` are used as interactive buttons (e.g., the user avatar for sign-out), they completely fail keyboard and screen reader accessibility checks. Adding only a `cursor-pointer` is insufficient.
+**Action:** Always ensure such elements receive full accessibility affordances: `role="button"`, `tabIndex={0}`, an explicit `aria-label`, an `onKeyDown` handler that explicitly checks for `Enter` or `Space` key presses to trigger the action, and distinct focus states (`focus-visible:ring-2`, etc.) to provide visible focus rings for keyboard navigation.
