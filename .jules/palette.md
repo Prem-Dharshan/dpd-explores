@@ -1,0 +1,3 @@
+## 2025-05-18 - Improve Avatar Button Accessibility
+**Learning:** Using non-semantic elements like `img` as actionable components (e.g. user avatars as a sign out trigger) significantly impairs keyboard navigation for users relying on keyboard interaction. They lack implicit tab order and built-in keyboard event handlers.
+**Action:** When non-semantic elements are used as interactive triggers, always ensure full keyboard accessibility by explicitly adding `role="button"`, `tabIndex={0}`, an `onKeyDown` handler that catches Enter and Space keys, and clear focus indicators like Tailwind's `focus-visible` ring.
