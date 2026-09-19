@@ -1,0 +1,4 @@
+## 2024-05-18 - Fix SSRF and Error Leakage in API
+**Vulnerability:** Open-redirect SSRF bypasses via `fetch` following redirects, and error info leakage in `catch` blocks returning 500 status.
+**Learning:** Even if the initial URL is valid and trusted, following redirects manually (or automatically) using `fetch` can lead to SSRF if the `Location` header is not strictly validated on each hop. Additionally, returning `String(e)` from catch blocks can leak stack traces or internal implementation details.
+**Prevention:** Strictly validate not just the initial input URL, but every URL extracted from a `Location` header against an allowlist of domains and protocols (e.g., `http:`/`https:`, `maps.app.goo.gl`, `.google.com`). For API endpoints, always fail securely by returning generic error messages (e.g., `"An error occurred"`) for unexpected exceptions (500 errors).
