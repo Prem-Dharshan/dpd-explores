@@ -1,0 +1,3 @@
+## 2025-03-05 - Interactive Non-Semantic Elements
+**Learning:** In React apps using `<img>` tags for user avatars acting as buttons (e.g. sign out), these elements inherently lack keyboard accessibility and screen reader context compared to standard `<button>` elements, leading to "hidden" click areas for non-mouse users.
+**Action:** Always ensure that when `<img>` tags must be used as interactive elements, they are supplemented with `role="button"`, `tabIndex={0}`, an `onKeyDown` handler for 'Enter'/'Space', and clear `focus-visible` CSS utilities so keyboard navigation visually highlights them.
