@@ -60,6 +60,6 @@ User request: ${moodPrompt}`,
     return res.status(200).json({ placeIds: JSON.parse(stripJsonFences(content)) })
   } catch (e) {
     console.error("[/api/recommend]", e)
-    return res.status(500).json({ error: String(e) })
+    return res.status(500).json({ error: "An error occurred" })
   }
 }
