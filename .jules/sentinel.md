@@ -1,0 +1,4 @@
+## 2025-02-24 - SSRF in Google Maps URL expansion
+**Vulnerability:** The `/api/enrich` endpoint accepted any URL as input and manually followed redirects to extract Google Maps data. It lacked validation of the initial URL and subsequent `Location` header URLs, allowing an attacker to supply a URL pointing to an internal IP or local service (SSRF).
+**Learning:** When manually following redirects using `fetch` with `redirect: "manual"`, it is critical to validate both the initial URL and every subsequent URL retrieved from the `Location` header. An attacker can bypass initial validation if a seemingly safe domain redirects to a malicious internal IP.
+**Prevention:** Implement a strict allowlist of protocols (`http:`, `https:`) and domains (e.g., exact match for `maps.app.goo.gl` or regex for `google.com`/regional domains) and check the URL at each step of the redirection chain.
