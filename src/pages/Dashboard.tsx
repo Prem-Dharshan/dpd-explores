@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -144,6 +144,13 @@ export function Dashboard() {
   const vibeFilter = searchParams.getAll("vibe")
   const occasionFilter = searchParams.getAll("occasion")
 
+  // ⚡ Bolt Performance Optimization:
+  // React Router's getAll() returns a new array reference on every render, which breaks
+  // dependency arrays and causes the expensive filter/sort logic to run constantly.
+  // We stringify the arrays to create stable primitive values for the dependency array.
+  const vibeFilterString = JSON.stringify(vibeFilter)
+  const occasionFilterString = JSON.stringify(occasionFilter)
+
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
     if (value) next.set(key, value)
@@ -186,7 +193,10 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  // ⚡ Bolt Performance Optimization:
+  // Used useMemo instead of useCallback to evaluate synchronously derived state directly
+  // and prevent invoking the callback function on every single render.
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +229,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places, search, visited, dietFilter, cityFilter, vibeFilterString, occasionFilterString, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
