@@ -63,7 +63,8 @@ function PlaceCard({ place, highlighted }: { place: Place; highlighted: boolean 
             window.open(getGmapsUrl(place), "_blank", "noopener")
           }}
           title="Open in Google Maps"
-          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110"
+          aria-label="Open in Google Maps"
+          className="absolute bottom-2.5 right-2.5 w-8 h-8 bg-surface/95 hover:bg-surface rounded-full shadow-card flex items-center justify-center transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
         >
           <GmapsIcon className="h-[18px]" />
         </button>
@@ -310,14 +311,25 @@ export function Dashboard() {
             <img
               src={user.image}
               alt={user.name || ""}
-              className="w-8 h-8 rounded-full border border-border cursor-pointer"
+              className="w-8 h-8 rounded-full border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               onClick={handleSignOut}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSignOut()
+                }
+              }}
+              role="button"
+              tabIndex={0}
               title="Click to sign out"
+              aria-label="Sign out"
             />
           ) : (
             <button
               onClick={handleSignOut}
-              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              title="Click to sign out"
+              aria-label="Sign out"
             >
               {user?.email?.charAt(0).toUpperCase()}
             </button>
