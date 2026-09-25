@@ -1,0 +1,3 @@
+## 2024-05-18 - [Add accessibility affordances to non-semantic interactive elements]
+**Learning:** When non-semantic tags like `img` are used as interactive controls (such as avatars for user profile or sign-out), they need explicit roles, tabIndex, keyboard event handlers, and visual focus styles to be fully accessible to screen reader and keyboard users.
+**Action:** Whenever converting an `img` or `div` to a button-like element, always include `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (for `Enter` and `Space`), `aria-label`, and `focus-visible` utility classes for keyboard focus. Prefer using an actual `<button>` wrapping the `<img />` where possible.
