@@ -1,0 +1,3 @@
+## 2024-05-18 - [Ensure full keyboard accessibility for non-semantic interactive elements]
+**Learning:** When using non-semantic elements like `img` as interactive controls (e.g., for user avatars serving as sign-out buttons), simply adding an `onClick` handler is insufficient for accessibility. These elements lack native keyboard affordances, making them inaccessible to keyboard and screen reader users.
+**Action:** Always verify that non-semantic interactive elements include `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (specifically checking for "Enter" and "Space" keys to trigger the action and calling `e.preventDefault()`), and explicit visual focus indicators (e.g., using `focus-visible:ring-2 focus-visible:outline-none` utility classes).
