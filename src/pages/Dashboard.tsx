@@ -310,14 +310,19 @@ export function Dashboard() {
             <img
               src={user.image}
               alt={user.name || ""}
-              className="w-8 h-8 rounded-full border border-border cursor-pointer"
+              className="w-8 h-8 rounded-full border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               onClick={handleSignOut}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSignOut(); } }}
               title="Click to sign out"
+              role="button"
+              tabIndex={0}
+              aria-label="Sign out"
             />
           ) : (
             <button
               onClick={handleSignOut}
-              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center"
+              aria-label="Sign out"
+              className="w-8 h-8 rounded-full bg-accent-muted text-accent font-display text-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
             >
               {user?.email?.charAt(0).toUpperCase()}
             </button>
@@ -340,7 +345,11 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button
+                  onClick={() => { setHighlight(null); setMoodInput("") }}
+                  aria-label="Clear mood search"
+                  className="text-ink-secondary hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded-sm"
+                >
                   <X className="w-4 h-4" />
                 </button>
               )}
