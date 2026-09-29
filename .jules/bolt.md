@@ -1,0 +1,3 @@
+## 2024-05-24 - [Fix searchParams.getAll() breaking memoization]
+**Learning:** React Router's `useSearchParams()[0].getAll()` returns a new array reference on every render, which can cause excessive re-renders and break `useMemo` / `useCallback` dependency arrays.
+**Action:** Stringify the array before passing it into dependency arrays (e.g. `JSON.stringify(rawArray)`) and disable the exhaustive-deps eslint warning for that line, rather than using `Array.join()` which may not handle all cases or types. For synchronously derived state, use `useMemo` directly instead of a `useCallback` generating a closure called on every render.
