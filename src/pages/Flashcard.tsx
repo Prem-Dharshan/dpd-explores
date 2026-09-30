@@ -448,8 +448,8 @@ export function Flashcard() {
                           className="h-7 px-2 rounded-full border border-accent bg-surface text-[11px] text-ink outline-none w-28"
                           placeholder="Add tag..."
                         />
-                        <button onClick={() => addTag(field)} className="text-accent"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setAddingField(null)} className="text-ink-tertiary"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => addTag(field)} className="text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-0.5" aria-label="Confirm tag"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setAddingField(null)} className="text-ink-tertiary hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-0.5" aria-label="Cancel tag"><X className="w-3.5 h-3.5" /></button>
                       </div>
                     ) : (
                       <button

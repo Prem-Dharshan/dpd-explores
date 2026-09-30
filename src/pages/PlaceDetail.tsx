@@ -457,7 +457,7 @@ export function PlaceDetail() {
           <div className="bg-surface border border-border rounded-xl w-full max-w-lg shadow-elevated max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface">
               <h3 className="font-display text-[20px] text-ink">Add Review</h3>
-              <button onClick={() => setShowAddReview(false)} className="text-ink-tertiary hover:text-ink">
+              <button onClick={() => setShowAddReview(false)} className="text-ink-tertiary hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-0.5" aria-label="Close add review modal">
                 <X className="w-5 h-5" />
               </button>
             </div>
