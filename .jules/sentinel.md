@@ -1,0 +1,4 @@
+## 2026-10-01 - SSRF Vulnerability in URL Enrichment
+**Vulnerability:** The `/api/enrich.ts` endpoint resolved Google Maps URLs by manually following redirects (`redirect: "manual"`) without checking if the redirected URLs were safe. This allowed Server-Side Request Forgery (SSRF) bypasses where a valid-looking URL redirects the server to fetch an internal IP or cloud metadata URL.
+**Learning:** Manual redirect following is extremely dangerous unless every single URL in the redirect chain is strictly validated against an allowlist of domains and protocols. Naive string matching on initial URLs is insufficient.
+**Prevention:** Always implement explicit protocol validation (allow only `http:` and `https:`) and strict hostname validation checks (using precise regexes or `endswith` for subdomains) at every step of a URL expansion loop.
