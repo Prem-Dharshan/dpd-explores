@@ -1,0 +1,4 @@
+## 2024-05-24 - Fix SSRF and Information Leakage in API Enrich
+**Vulnerability:** Server-Side Request Forgery (SSRF) risk in `api/enrich.ts` via manual URL redirection, and information leakage via raw error messages in the catch block.
+**Learning:** `fetch` calls with `redirect: "manual"` can lead to SSRF if the target redirects to malicious internal IPs and the redirected URLs are not validated. Information leakage occurs when raw error details (`String(e)`) are sent to clients on 500 errors.
+**Prevention:** Always validate protocols (`http:`, `https:`) and hostnames against a strict allowlist (e.g., using precise regex for regional domains) for both the initial URL and any subsequent redirects. Always fail securely by returning generic error messages (e.g., "An error occurred") for server-side exceptions.
