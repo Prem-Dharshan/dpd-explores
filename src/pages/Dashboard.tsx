@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -186,7 +186,10 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  // Optimization: Use useMemo for synchronously derived state instead of useCallback.
+  // This prevents executing expensive array filtering, mapping, and sorting on every render,
+  // reducing unnecessary CPU cycles and improving perceived UI responsiveness, especially with large lists.
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -219,9 +222,7 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy, typeFilter])
 
   // Mood recommender
   const handleMoodSearch = async () => {
@@ -237,8 +238,10 @@ export function Dashboard() {
     }
   }
 
-  const cities = [...new Set(places.map((p) => p.city).filter(Boolean))] as string[]
-  const placeTypes = [...new Set(places.map((p) => p.place_type).filter(Boolean))] as string[]
+  // Optimization: Memoize the extraction of unique cities and place types.
+  // Previously, this mapping and set creation occurred on every render.
+  const cities = useMemo(() => [...new Set(places.map((p) => p.city).filter(Boolean))] as string[], [places])
+  const placeTypes = useMemo(() => [...new Set(places.map((p) => p.place_type).filter(Boolean))] as string[], [places])
 
   const activeFilterCount = [
     search, visited !== "all" ? visited : "", dietFilter !== "all" ? dietFilter : "",
