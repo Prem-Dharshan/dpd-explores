@@ -1,0 +1,3 @@
+## 2024-05-18 - Focus Rings on Dynamic Backgrounds and Missing Aria Labels
+**Learning:** Icon-only controls on dynamic backgrounds (like carousel images) need `focus-visible:ring-surface` (or an equivalent high-contrast color) rather than standard accent colors to ensure visibility. Found that various icon-only buttons lacked standard aria-labels and keyboard focus affordances.
+**Action:** Always verify `aria-label` is present on interactive elements lacking visible text, and explicitly define `focus-visible:ring-2` using a contrast-aware color (e.g., `ring-surface` on images, `ring-accent` elsewhere).
