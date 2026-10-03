@@ -340,7 +340,7 @@ export function Dashboard() {
                 className="flex-1 bg-transparent font-display italic text-[16px] text-ink placeholder:text-ink-secondary outline-none"
               />
               {highlight && (
-                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink">
+                <button onClick={() => { setHighlight(null); setMoodInput("") }} className="text-ink-secondary hover:text-ink" aria-label="Clear mood search">
                   <X className="w-4 h-4" />
                 </button>
               )}
