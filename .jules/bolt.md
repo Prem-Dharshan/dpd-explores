@@ -1,0 +1,3 @@
+## 2024-05-24 - Memoizing SearchParams Arrays
+**Learning:** `useSearchParams().getAll()` breaks memoization on every render because it returns a new array reference. Directly using `JSON.stringify(array)` in the `useCallback`/`useMemo` dependency array triggers ESLint warnings ("Expected the dependency list to be an array of simple expressions").
+**Action:** Extract the stringified array to a separate variable `const stringified = JSON.stringify(rawArray)` before the hook, use `// eslint-disable-next-line react-hooks/exhaustive-deps`, and pass the stringified variable instead of the raw array into the hook dependency array to preserve reference equality.
