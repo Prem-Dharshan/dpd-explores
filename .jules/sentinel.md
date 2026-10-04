@@ -1,0 +1,4 @@
+## 2023-10-24 - SSRF Vulnerability in Maps URL Expansion
+**Vulnerability:** Unvalidated URL redirection tracking in `expandUrl` allowed Server-Side Request Forgery (SSRF). Attackers could provide a malicious URL or a URL that redirects to an internal IP (e.g. `http://localhost:54321` or AWS metadata endpoint) which would be fetched by the serverless function.
+**Learning:** Even when manually following redirects with `fetch` (using `redirect: "manual"`), every subsequent URL extracted from the `Location` header must be strictly validated. Naive domain string matching (like `.startsWith("google.")`) is dangerous.
+**Prevention:** Implement strict protocol (`http:`/`https:`) and hostname validation for every step in the redirect chain. Use exact matches (`maps.app.goo.gl`), safe suffixes (`.endsWith(".google.com")`), or precise regexes for regional domains to ensure the destination remains safe.
