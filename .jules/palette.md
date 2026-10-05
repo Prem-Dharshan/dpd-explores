@@ -1,0 +1,3 @@
+## 2024-05-18 - High-Contrast Focus Rings for Overlaid Controls
+**Learning:** When UI controls (like carousel arrows) are overlaid on top of dynamic content such as images, standard focus rings can become invisible due to poor contrast.
+**Action:** Always use a specific, high-contrast focus ring color (e.g., `focus-visible:ring-surface` or white) for controls placed over images to ensure keyboard navigation remains visibly accessible.
