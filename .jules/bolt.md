@@ -1,0 +1,3 @@
+## 2024-05-18 - [Memoization of synchronously derived state]
+**Learning:** Invoking a `useCallback` hook continuously for synchronously derived state acts as a performance bottleneck because the computation happens on every single render. Additionally, react-router's `searchParams.getAll()` returns a new array reference per render, which breaks strict equality.
+**Action:** Use `useMemo` directly for synchronously derived state, and defensively `JSON.stringify` non-stable array dependencies into primitives before passing them into the dependency array (disabling eslint rules as necessary for exhaustive-deps when doing so) to preserve memoization without causing reference bugs.
