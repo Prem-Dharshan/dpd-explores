@@ -1,0 +1,3 @@
+## 2025-03-08 - [searchParams.getAll() Breaks Memoization]
+**Learning:** `searchParams.getAll()` returns a new array reference on every render, which breaks React memoization techniques (like `useCallback` or `useMemo`) if the raw array is placed directly into dependency arrays.
+**Action:** Stringify the array (e.g. `const stringified = JSON.stringify(searchParams.getAll('param'))`) and pass the stringified variable to the dependency array. Use an eslint-disable comment for exhaustive-deps to bypass the missing raw array warning.
