@@ -19,10 +19,27 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+// Ensure URLs follow correct protocols and hostname allowed list to prevent SSRF vulnerabilities
+function isAllowedGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+    const hostname = u.hostname
+    if (hostname === "maps.app.goo.gl") return true
+    if (/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(hostname)) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedGoogleMapsUrl(current)) {
+      throw new Error("Invalid or disallowed URL detected during expansion")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
