@@ -1,0 +1,3 @@
+## 2024-10-08 - High Contrast Focus Rings on Dynamic Backgrounds
+**Learning:** When adding focus states to UI controls overlaid on dynamic or unpredictable backgrounds (like images in a photo carousel), using a generic accent color for the focus ring may result in poor contrast and fail accessibility standards.
+**Action:** Use `focus-visible:ring-surface` (or a similarly high-contrast theme color) specifically for controls overlaid on dynamic backgrounds to ensure the focus ring remains clearly visible regardless of the image content beneath it. Always explicitly add `focus-visible:outline-none` when applying custom focus rings to remove the default browser outline.
