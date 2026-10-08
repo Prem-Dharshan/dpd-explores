@@ -1,0 +1,3 @@
+## 2024-10-08 - Use useMemo over useCallback for synchronously derived state
+**Learning:** For synchronously derived state like `filtered` in `src/pages/Dashboard.tsx`, wrapping the logic in `useCallback` and then immediately invoking it on every render (`const displayedPlaces = filtered()`) defeats the purpose of memoization, as it forces re-execution on every render.
+**Action:** Use `useMemo` to memoize the computed value directly instead of memoizing a function that is always called. When depending on arrays from `searchParams.getAll()` (which returns a new reference every render), stringify the array, pass the stringified value to the dependency array, and bypass ESLint with `// eslint-disable-next-line react-hooks/exhaustive-deps` to maintain referential stability.
