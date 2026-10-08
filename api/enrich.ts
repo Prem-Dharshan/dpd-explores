@@ -23,6 +23,27 @@ const FIELDS = [
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    // SSRF Protection: Validate protocol and hostname before fetching
+    let parsed: URL
+    try {
+      parsed = new URL(current)
+    } catch {
+      throw new Error("Invalid URL")
+    }
+
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("Invalid protocol")
+    }
+
+    const isValidHost =
+      parsed.hostname === "maps.app.goo.gl" ||
+      parsed.hostname.endsWith(".google.com") ||
+      /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(parsed.hostname)
+
+    if (!isValidHost) {
+      throw new Error("Invalid hostname")
+    }
+
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break

@@ -1,0 +1,4 @@
+## 2024-05-24 - SSRF in Manual URL Redirect Following
+**Vulnerability:** When manually following URL redirects (e.g., `fetch` with `redirect: "manual"`), evaluating only the initial input URL for safety is insufficient. A safe domain can redirect to a malicious internal IP or unexpected scheme, leading to Server-Side Request Forgery (SSRF).
+**Learning:** SSRF protections must be applied iteratively. Every URL extracted from the `Location` header must be independently parsed and strictly validated against an allowlist of domains and protocols *before* the subsequent request is made.
+**Prevention:** Inside the redirect loop, always parse the current URL, validate its protocol (e.g., strictly `http:` and `https:`), and check the hostname against a precise whitelist (using strict matches or `.endsWith` for subdomains) before executing the fetch.
