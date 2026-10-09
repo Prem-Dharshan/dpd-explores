@@ -19,15 +19,43 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate that a URL is a safe Google domain before fetching */
+function isSafeGoogleUrl(urlStr: string): boolean {
+  try {
+    const url = new URL(urlStr)
+    if (url.protocol !== "https:" && url.protocol !== "http:") return false
+
+    const host = url.hostname
+    // Exact match for the shortlink domain
+    if (host === "maps.app.goo.gl") return true
+
+    // Strict regex for regional/standard Google domains
+    // Matches www.google.com, maps.google.co.in, consent.google.fr, etc.
+    const googleDomainRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    return googleDomainRegex.test(host)
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isSafeGoogleUrl(current)) {
+      throw new Error("Invalid or unsafe redirect URL")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
   }
+
+  // Validate the final URL as well just in case
+  if (!isSafeGoogleUrl(current)) {
+    throw new Error("Invalid or unsafe final URL")
+  }
+
   return current
 }
 
