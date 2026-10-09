@@ -1,0 +1,3 @@
+## 2024-10-09 - [Prevent Unnecessary Re-renders with React Router SearchParams]
+**Learning:** `searchParams.getAll()` from `useSearchParams` returns a new array reference on every single render. Passing this directly to `useCallback` or `useMemo` breaks memoization and forces recalculation of derived state or recreation of functions even when the parameters haven't actually changed.
+**Action:** When you need array results from `searchParams.getAll()`, wrap them in `useMemo` and depend directly on `[searchParams]` (since the `searchParams` object reference only changes when the URL changes). For synchronously derived state, use `useMemo` directly instead of a `useCallback` that is immediately invoked.
