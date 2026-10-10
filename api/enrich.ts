@@ -19,14 +19,44 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
-/** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
+/** Validate URL to prevent SSRF by ensuring it only points to allowed Google domains */
+function isAllowedGoogleUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+    const hostname = url.hostname
+
+    if (hostname === "maps.app.goo.gl") return true
+    if (hostname.endsWith(".google.com")) return true
+
+    // Regional domains like google.co.in, google.co.uk, google.fr
+    const regionalGoogleRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    if (regionalGoogleRegex.test(hostname)) return true
+
+    return false
+  } catch {
+    return false // Malformed URL
+  }
+}
+
+/** Follow redirects (maps.app.goo.gl short links) to the full Maps URL safely */
 async function expandUrl(url: string): Promise<string> {
   let current = url
+
+  if (!isAllowedGoogleUrl(current)) {
+    throw new Error("Invalid URL domain provided")
+  }
+
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+
+    const nextUrl = new URL(loc, current).toString()
+    if (!isAllowedGoogleUrl(nextUrl)) {
+      throw new Error("Invalid URL redirect domain")
+    }
+    current = nextUrl
   }
   return current
 }
