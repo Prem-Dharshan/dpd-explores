@@ -1,0 +1,4 @@
+## 2024-10-11 - Prevent SSRF in manual URL redirect expansion
+**Vulnerability:** The `/api/enrich` endpoint accepted a user-provided URL and followed its redirects manually by reading the `Location` header, without validating the initial URL or the subsequent redirect destinations.
+**Learning:** When manually following redirects (e.g., using `redirect: "manual"` in `fetch`), simply validating the first URL is insufficient. A safe domain can redirect to an unsafe, internal IP address or malicious domain, leading to a Server-Side Request Forgery (SSRF) bypass.
+**Prevention:** Always use the `URL` constructor to safely parse and extract hostnames/protocols, and validate both the initial URL and every URL extracted from the `Location` header against an allowlist of domains and protocols (`http`/`https`).

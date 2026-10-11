@@ -19,14 +19,37 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isAllowedGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+
+    const host = u.hostname
+    if (host === "maps.app.goo.gl") return true
+    if (host === "goo.gl") return true
+    if (host.endsWith(".google.com")) return true
+    if (/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(host)) return true
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedGoogleMapsUrl(current)) {
+      throw new Error("Invalid or unauthorized Google Maps URL")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
+  }
+  if (!isAllowedGoogleMapsUrl(current)) {
+    throw new Error("Invalid or unauthorized Google Maps URL")
   }
   return current
 }
