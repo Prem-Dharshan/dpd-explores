@@ -1,0 +1,3 @@
+## 2024-10-11 - Add a11y affordances to Place Detail controls
+**Learning:** Icon-only controls over dynamic backgrounds like carousels need specific high-contrast focus rings (`focus-visible:ring-surface`) to remain visible during keyboard navigation. Additionally, indicator dots often lack both ARIA labels and focus states, rendering them invisible to screen readers and keyboard users.
+**Action:** Always add explicit `aria-label` and `focus-visible:ring-2 focus-visible:ring-surface` to image overlay buttons (carousel arrows, dots) and `focus-visible:ring-accent` to standard modal close buttons.
