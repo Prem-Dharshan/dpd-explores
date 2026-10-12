@@ -1,0 +1,3 @@
+## 2025-02-28 - React Router useSearchParams breaking memoization
+**Learning:** `searchParams.getAll()` from `react-router-dom` returns a new array reference on every render, which breaks memoization when used in dependency arrays of hooks like `useMemo` or `useCallback`. This caused the derived state `filtered()` to return a new array reference, triggering unnecessary re-renders downstream in `src/pages/Dashboard.tsx`.
+**Action:** When extracting arrays from `searchParams` that are used in dependency arrays, either memoize the extracted array explicitly (e.g., using `JSON.stringify` as the dependency to bypass reference checks while suppressing the exhaustive-deps ESLint rule) or use `useMemo` for derived states to prevent unnecessary downstream re-renders.
