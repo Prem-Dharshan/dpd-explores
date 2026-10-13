@@ -1,0 +1,4 @@
+## 2024-10-13 - SSRF Vulnerability in Manual Redirect Handling
+**Vulnerability:** The `expandUrl` function in `api/enrich.ts` manually followed HTTP redirects (`redirect: "manual"`) using the `Location` header without validating the initial URL or the URLs provided in subsequent `Location` headers.
+**Learning:** Even if the initial URL is expected to be a Google Maps link, an attacker could supply a malicious URL that redirects to internal IP addresses (e.g., 169.254.169.254 for cloud metadata) or unintended external services. The manual redirect logic blindly fetched whatever the `Location` header provided.
+**Prevention:** Always use the `URL` constructor to safely parse URLs and implement strict validation of the protocol (`http:`, `https:`) and hostname against an explicit allowlist (using exact matches or strict regexes) for both the initial URL and *every* subsequent URL extracted from a `Location` header before calling `fetch`.
