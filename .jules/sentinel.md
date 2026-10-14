@@ -1,0 +1,4 @@
+## 2026-10-14 - Prevent SSRF via strict URL validation in redirects
+**Vulnerability:** `api/enrich.ts` accepted unvalidated URLs from user input and followed arbitrary HTTP redirects during URL expansion, allowing for Server-Side Request Forgery (SSRF) against internal resources or unauthenticated open redirects.
+**Learning:** When fetching URLs based on user input, validating just the initial URL is insufficient. We must validate both the initial URL and any URLs extracted from the `Location` header during a manual redirect loop to prevent open-redirect SSRF bypasses.
+**Prevention:** Always use the `URL` constructor to safely parse URLs, strictly validate the protocol (http/https), and strictly validate the hostname against a whitelist of expected domains (e.g., Google Maps domains) before making any HTTP request.
