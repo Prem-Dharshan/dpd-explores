@@ -19,10 +19,29 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Verify URL is allowed (Google Maps domains only) to prevent SSRF */
+function isAllowedUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+    const h = u.hostname
+    return (
+      h === "maps.app.goo.gl" ||
+      h.endsWith(".google.com") ||
+      /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(h)
+    )
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedUrl(current)) {
+      throw new Error("Invalid or disallowed URL for enrichment")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
