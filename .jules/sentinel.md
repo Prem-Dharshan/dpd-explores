@@ -1,0 +1,4 @@
+## 2023-10-16 - Fix SSRF in URL Expansion
+**Vulnerability:** Server-Side Request Forgery (SSRF) in `api/enrich.ts` via the `expandUrl` function. The endpoint accepted arbitrary URLs and followed redirects using `fetch` without any domain or protocol validation.
+**Learning:** Naively following redirects (even manually via `redirect: "manual"`) allows an attacker to supply a seemingly safe initial URL that redirects to an internal or malicious IP address, bypassing frontend validation.
+**Prevention:** Implement strict domain validation (allowing only specific Google domains) and protocol validation (`http:`/`https:`) before making the initial fetch AND validate the `location` header URL for every redirect step before fetching the subsequent URL. Always use the `URL` constructor to reliably parse parts of the URL.
