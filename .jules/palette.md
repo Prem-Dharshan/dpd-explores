@@ -1,0 +1,3 @@
+## 2026-10-16 - Make icon-only buttons and avatar images accessible
+**Learning:** Icon-only elements (like carousel arrows, dots, or close buttons) require explicit `aria-label` attributes for screen reader accessibility. Furthermore, interactive non-semantic elements, like `img` used as buttons, need keyboard support (`role="button"`, `tabIndex={0}`, `onKeyDown` for Enter/Space). All interactive elements need clear visual focus states, especially when overlaid on images where contrast might be poor (e.g. using `focus-visible:ring-surface` vs `focus-visible:ring-accent`).
+**Action:** Always add `aria-label` and high-contrast `focus-visible` utility classes to icon-only controls. For non-semantic clickable elements, ensure full keyboard affordances are implemented.
