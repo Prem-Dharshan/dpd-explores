@@ -1,0 +1,3 @@
+## 2024-10-17 - Keyboard Accessibility for Non-Semantic Buttons
+**Learning:** Found instances where `<img onClick>` was used as a button (user avatar) without keyboard support, and where icon-only controls (carousel arrows, close buttons) lacked `aria-label` and visible focus states. Since these controls overlay dynamic content (like images), a standard focus ring might not be visible.
+**Action:** Always ensure elements acting as buttons have `role="button"`, `tabIndex={0}`, and `onKeyDown` handlers for Enter/Space. Always add `aria-label` to icon-only controls. Use `focus-visible:ring-surface` or `focus-visible:ring-accent` to ensure the focus ring contrasts with the background.
