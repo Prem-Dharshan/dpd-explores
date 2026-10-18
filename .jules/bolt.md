@@ -1,0 +1,3 @@
+## 2024-10-18 - [useSearchParams Array Memoization]
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render in React Router. If passed directly into a dependency array for a hook like `useCallback` or `useMemo`, it will break memoization causing re-evaluations on every render. Also, synchronously derived state should use `useMemo` instead of invoking `useCallback` on every render.
+**Action:** Stringify the array returned by `getAll()` into a separate variable before adding it to the dependency array, and use an eslint disable comment `// eslint-disable-next-line react-hooks/exhaustive-deps` to bypass the missing raw array warning.
