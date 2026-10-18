@@ -1,0 +1,4 @@
+## 2023-10-18 - Prevent SSRF in Maps URL expansion
+**Vulnerability:** Open redirect SSRF bypass in `api/enrich.ts` where unvalidated URL extraction could allow an attacker to make arbitrary server-side requests through the `/api/enrich` endpoint.
+**Learning:** Even when manually following redirects (e.g. `fetch` with `redirect: "manual"`), it's crucial to strictly validate not only the initial URL but also every subsequent URL extracted from the `Location` header to prevent open-redirect SSRF bypasses.
+**Prevention:** Always use the `URL` constructor to parse URLs. Explicitly validate both protocols (only allowing `http:` and `https:`) and strictly validate hostnames using exact matches, specific suffixes (`.endsWith('.google.com')`), and precise regexes (`/^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/`) before calling `fetch()`.
