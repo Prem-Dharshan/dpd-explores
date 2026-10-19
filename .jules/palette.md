@@ -1,0 +1,3 @@
+## 2024-05-18 - Keyboard Focus on Dynamic Backgrounds
+**Learning:** When overlaying interactive controls (like carousel arrows or pagination dots) on dynamic, visually complex backgrounds such as user-uploaded images, standard focus rings (e.g., `focus-visible:ring-accent`) may fail WCAG contrast requirements if the background behind them matches the ring color.
+**Action:** Use a high-contrast neutral or inverted focus ring color, such as `focus-visible:ring-surface` (typically white or a very light color), for controls positioned directly over dynamic images. This ensures the focus indicator remains visible regardless of the underlying image's content. Always combine this with `focus-visible:outline-none` to override browser defaults cleanly.
