@@ -30,10 +30,31 @@ function mapPlacesAPIToPlace(
   type AddressComponent = { longText: string; shortText: string; types: string[] }
   const photos = (api.photos as Array<{ name: string }> | undefined)?.map((p) => p.name) || []
   const components = api.addressComponents as AddressComponent[] | undefined
-  const city = components?.find((c) => c.types.includes("locality"))?.longText || ""
-  const area =
-    components?.find((c) => c.types.includes("sublocality_level_1"))?.longText ||
-    components?.find((c) => c.types.includes("sublocality"))?.longText || ""
+  let city = ""
+  let areaLevel1 = ""
+  let areaSub = ""
+
+  if (components) {
+    for (let i = 0; i < components.length; i++) {
+      const c = components[i]
+      for (let j = 0; j < c.types.length; j++) {
+        const t = c.types[j]
+        if (!city && t === "locality") {
+          city = c.longText
+          break
+        }
+        if (!areaLevel1 && t === "sublocality_level_1") {
+          areaLevel1 = c.longText
+          break
+        }
+        if (!areaSub && t === "sublocality") {
+          areaSub = c.longText
+          break
+        }
+      }
+    }
+  }
+  const area = areaLevel1 || areaSub || ""
 
   const priceMap: Record<string, "₹" | "₹₹" | "₹₹₹" | "₹₹₹₹"> = {
     PRICE_LEVEL_INEXPENSIVE: "₹",
