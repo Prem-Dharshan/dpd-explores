@@ -1,0 +1,3 @@
+## 2024-03-24 - React Router useSearchParams Array Reference Invalidation
+**Learning:** React Router's `useSearchParams()[0].getAll()` returns a new array reference on every single render, silently breaking memoization for any `useMemo` or `useCallback` that depends on it. Also, computing derived state synchronously inside a `useCallback` and invoking it immediately negates the purpose of memoization.
+**Action:** When extracting arrays from search params, always wrap the raw array in a `useMemo` using a stringified version as the dependency (while safely bypassing the ESLint exhaustive-deps warning). Always use `useMemo` directly for synchronously derived state instead of `useCallback()()`.
