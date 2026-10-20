@@ -1,0 +1,3 @@
+## 2024-05-19 - Missing ARIA Labels on Icon Buttons and Images
+**Learning:** Found several instances where icon-only buttons (like Google Maps links, search/filter clears, photo carousel controls) and interactive images (like user avatars) are missing `aria-label`s or proper role/tabIndex attributes for screen readers. The project relies on tooltips or visual context which isn't fully accessible.
+**Action:** Adding `aria-label` to icon-only buttons like Google Maps links, photo carousel arrows, and clear search input buttons across the codebase to ensure screen reader users can understand their purpose.
