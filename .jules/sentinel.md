@@ -1,0 +1,4 @@
+## 2024-05-24 - [Fix SSRF vulnerability in manual URL redirects]
+**Vulnerability:** Server-Side Request Forgery (SSRF) risk in `api/enrich.ts` due to following manual redirects without URL validation. The `expandUrl` function uses `redirect: "manual"` and blindly trusts the `Location` header to fetch the next URL, which could lead to an attacker redirecting the fetch to internal IPs or malicious domains.
+**Learning:** Even if the initial URL is validated or expected to be a Google Maps URL, manual redirect following (`Location` header parsing) requires strict validation on *every* subsequent URL to prevent SSRF bypasses.
+**Prevention:** Always parse URLs using the `new URL()` constructor and validate the protocol and hostname against a strict allowlist (e.g., using exact matches or strict regex) for both the initial request and any subsequent redirects.
