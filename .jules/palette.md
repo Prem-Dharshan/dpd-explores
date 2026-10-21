@@ -1,0 +1,3 @@
+## 2024-05-18 - Accessibility of Interactive Controls on Image Backgrounds
+**Learning:** Interactive controls overlaid on dynamic image backgrounds (like image carousels) require explicit, high-contrast focus rings (e.g., `focus-visible:ring-surface`) for keyboard accessibility to remain visible against dark/dynamic backgrounds, alongside standard `aria-label` requirements for icon-only buttons.
+**Action:** When implementing icon-only buttons or interactive elements overlaid on dynamic backgrounds, always add descriptive `aria-label`s and ensure robust keyboard focus visibility using explicit `focus-visible` utility classes.
