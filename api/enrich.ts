@@ -19,15 +19,30 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isValidGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false
+    const host = url.hostname
+    if (host === "maps.app.goo.gl" || host === "g.page") return true
+    const regex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    return regex.test(host) || host.endsWith(".google.com")
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isValidGoogleMapsUrl(current)) throw new Error("Invalid URL")
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
   }
+  if (!isValidGoogleMapsUrl(current)) throw new Error("Invalid URL")
   return current
 }
 
