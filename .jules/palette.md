@@ -1,0 +1,3 @@
+## 2024-10-24 - Explicit Accessibility for Dynamic Background Controls
+**Learning:** Icon-only controls overlaid on dynamic backgrounds (like images in a carousel) often lack explicit semantic labels and high-contrast focus rings. Using default focus rings can result in poor contrast against dark or colorful images.
+**Action:** Always add explicit `aria-label` attributes to icon-only controls (e.g., carousel arrows, indicator dots). Use `focus-visible:ring-surface` or similar high-contrast utility classes (with offsets if necessary) to ensure focus rings remain visible regardless of the underlying dynamic content.
