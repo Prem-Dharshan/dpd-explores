@@ -1,0 +1,4 @@
+## 2025-02-26 - SSRF in URL Expansion
+**Vulnerability:** The `/api/enrich` endpoint was manually following redirects without validating the initial URL or any subsequent `Location` header URLs, allowing SSRF by fetching arbitrary internal or external URLs.
+**Learning:** Even if the intent is to expand safe shortlinks, attackers can provide links to an attacker-controlled server that responds with a `Location` header pointing to internal services (e.g., `http://169.254.169.254` or internal network APIs). Redirect loops must strictly enforce domain allowlists.
+**Prevention:** Always parse URLs using the `URL` constructor to handle edge cases safely and perform strict protocol/domain allowlist checks (e.g., only `http:`/`https:` and Google maps domains) on the initial URL and every single redirect URL before executing a `fetch`.
