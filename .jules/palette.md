@@ -1,0 +1,3 @@
+## 2024-05-24 - High Contrast Focus Rings on Image Overlays
+**Learning:** Icon buttons that overlay dynamic or unpredictable image backgrounds (like photo carousel controls or map preview buttons) fail accessibility checks if they lack specific `aria-label`s. More importantly, standard focus outlines often become invisible against these image backgrounds, making keyboard navigation difficult for visually impaired users.
+**Action:** Always pair `aria-label` additions on these components with explicitly high-contrast focus rings (e.g., using Tailwind's `focus-visible:ring-surface` or `focus-visible:ring-white`) to guarantee visibility across any image underlying the button.

@@ -231,19 +231,26 @@ export function PlaceDetail() {
                 <>
                   <button
                     onClick={() => setPhotoIdx((i) => (i - 1 + photos.length) % photos.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-ink/30 hover:bg-ink/50 rounded-full flex items-center justify-center text-surface backdrop-blur transition-colors"
+                    aria-label="Previous photo"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-ink/30 hover:bg-ink/50 rounded-full flex items-center justify-center text-surface backdrop-blur transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setPhotoIdx((i) => (i + 1) % photos.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-ink/30 hover:bg-ink/50 rounded-full flex items-center justify-center text-surface backdrop-blur transition-colors"
+                    aria-label="Next photo"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-ink/30 hover:bg-ink/50 rounded-full flex items-center justify-center text-surface backdrop-blur transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
                     {photos.map((_, i) => (
-                      <button key={i} onClick={() => setPhotoIdx(i)} className={`h-1.5 rounded-full transition-all ${i === photoIdx ? "w-5 bg-surface" : "w-1.5 bg-surface/50"}`} />
+                      <button
+                        key={i}
+                        onClick={() => setPhotoIdx(i)}
+                        aria-label={`Go to photo ${i + 1}`}
+                        className={`h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface focus-visible:ring-offset-1 focus-visible:ring-offset-ink/20 ${i === photoIdx ? "w-5 bg-surface" : "w-1.5 bg-surface/50"}`}
+                      />
                     ))}
                   </div>
                 </>
@@ -457,7 +464,11 @@ export function PlaceDetail() {
           <div className="bg-surface border border-border rounded-xl w-full max-w-lg shadow-elevated max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface">
               <h3 className="font-display text-[20px] text-ink">Add Review</h3>
-              <button onClick={() => setShowAddReview(false)} className="text-ink-tertiary hover:text-ink">
+              <button
+                onClick={() => setShowAddReview(false)}
+                aria-label="Close add review modal"
+                className="text-ink-tertiary hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
