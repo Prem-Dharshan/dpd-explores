@@ -19,15 +19,41 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+function isAllowedUrl(urlStr: string): boolean {
+  try {
+    const u = new URL(urlStr)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false
+
+    const host = u.hostname
+    if (host === "maps.app.goo.gl") return true
+    if (host.endsWith(".google.com")) return true
+
+    const googleRegionalRegex = /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/
+    if (googleRegionalRegex.test(host)) return true
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
   let current = url
   for (let i = 0; i < 5; i++) {
+    if (!isAllowedUrl(current)) {
+      throw new Error("Invalid or unallowed URL")
+    }
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
     current = new URL(loc, current).toString()
   }
+
+  if (!isAllowedUrl(current)) {
+    throw new Error("Invalid or unallowed URL")
+  }
+
   return current
 }
 

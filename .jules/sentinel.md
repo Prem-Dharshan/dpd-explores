@@ -1,0 +1,4 @@
+## 2026-10-25 - SSRF via URL Redirect Expansion
+**Vulnerability:** Server-Side Request Forgery (SSRF) in `api/enrich.ts` due to unvalidated URL inputs and unchecked redirects when expanding short URLs.
+**Learning:** When manually following URL redirects (e.g., in `fetch` with `redirect: "manual"`), strictly validating only the initial input URL is insufficient. Attackers can bypass checks by using a safe domain that redirects to a malicious internal IP or arbitrary external server. Additionally, naive string matching (like `.startsWith('google.')`) can be bypassed (e.g., `google.attacker.com`).
+**Prevention:** Always use the `URL` constructor to parse URLs and extract hostnames/protocols. Implement explicit protocol validation (allowing only `http:` and `https:`) and strict hostname validation checks for every URL in the redirect chain. Use exact matches, `.endsWith()` correctly, and precise regexes for domain validation.
