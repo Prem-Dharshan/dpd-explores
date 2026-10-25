@@ -1,0 +1,3 @@
+## 2024-10-25 - Stabilized array references from URLSearchParams
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render, causing expensive filtering/sorting operations in `useMemo` (or `useCallback`) to re-run unnecessarily on every single render if those arrays are included in dependency arrays.
+**Action:** Extract the stringified value (e.g. `JSON.stringify(searchParams.getAll("param"))`) into a variable, then parse it back inside a `useMemo` block with only the stringified version in the dependency array to ensure the object reference remains stable across renders unless the actual URL parameter changes.
