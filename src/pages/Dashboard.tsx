@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -141,8 +141,11 @@ export function Dashboard() {
   const dietFilter = searchParams.get("diet") || "all"
   const sortBy = searchParams.get("sort") || "recently_added"
   const cityFilter = searchParams.get("city") || ""
-  const vibeFilter = searchParams.getAll("vibe")
-  const occasionFilter = searchParams.getAll("occasion")
+  const vibeFilterRaw = searchParams.getAll("vibe")
+  const occasionFilterRaw = searchParams.getAll("occasion")
+
+  const vibeFilterStr = JSON.stringify(vibeFilterRaw)
+  const occasionFilterStr = JSON.stringify(occasionFilterRaw)
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -186,7 +189,10 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  // Optimize: Use useMemo for synchronously derived state (filtering and sorting)
+  // instead of an immediately invoked useCallback. This prevents expensive O(N log N)
+  // operations on unrelated state changes (like typing in inputs or unrelated URL params).
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -205,8 +211,12 @@ export function Dashboard() {
     if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
     if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
     if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+
+    const parsedVibeFilter = JSON.parse(vibeFilterStr)
+    const parsedOccasionFilter = JSON.parse(occasionFilterStr)
+
+    if (parsedVibeFilter.length) result = result.filter((p) => parsedVibeFilter.some((v: string) => p.vibe.includes(v as never)))
+    if (parsedOccasionFilter.length) result = result.filter((p) => parsedOccasionFilter.some((o: string) => p.occasion.includes(o as never)))
 
     // Sort
     if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
@@ -219,9 +229,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, vibeFilterStr, occasionFilterStr, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
@@ -242,7 +251,7 @@ export function Dashboard() {
 
   const activeFilterCount = [
     search, visited !== "all" ? visited : "", dietFilter !== "all" ? dietFilter : "",
-    typeFilter, cityFilter, ...vibeFilter, ...occasionFilter
+    typeFilter, cityFilter, ...vibeFilterRaw, ...occasionFilterRaw
   ].filter(Boolean).length
 
   // "I'm bored!" — outsyd-style: jump to a random place that matches the
@@ -472,7 +481,7 @@ export function Dashboard() {
                   <p className="text-[11px] uppercase tracking-[0.06em] text-ink-secondary mb-2 border-b border-border pb-1">Vibe</p>
                   <div className="flex flex-wrap gap-1.5">
                     {["chill", "romantic", "lively", "hidden_gem", "instagrammable", "old_school"].map((v) => {
-                      const active = vibeFilter.includes(v)
+                      const active = vibeFilterRaw.includes(v)
                       return (
                         <button
                           key={v}
@@ -480,7 +489,7 @@ export function Dashboard() {
                             const next = new URLSearchParams(searchParams)
                             if (active) {
                               next.delete("vibe")
-                              vibeFilter.filter((x) => x !== v).forEach((x) => next.append("vibe", x))
+                              vibeFilterRaw.filter((x) => x !== v).forEach((x) => next.append("vibe", x))
                             } else {
                               next.append("vibe", v)
                             }
