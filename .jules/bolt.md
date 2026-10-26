@@ -1,0 +1,3 @@
+## 2024-05-24 - [Derived State Anti-Pattern with URL SearchParams]
+**Learning:** In React, using `useCallback` to wrap a filtering/sorting function and immediately invoking it during render defeats memoization and causes expensive O(N log N) operations on unrelated state changes (like typing in an input). Furthermore, React Router's `searchParams.getAll()` returns a new array reference on every render, which will break `useMemo` dependency checks if used directly.
+**Action:** Always use `useMemo` for synchronously derived state instead of `useCallback`. When using `searchParams.getAll()`, serialize the array to a string first, and parse it inside a `useMemo` to maintain referential equality.
