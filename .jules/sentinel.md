@@ -1,0 +1,4 @@
+## 2024-03-24 - SSRF vulnerability in manual redirect expansion
+**Vulnerability:** A Server-Side Request Forgery (SSRF) vulnerability existed in `api/enrich.ts` due to following redirects (`redirect: "manual"`) from user-provided Google Maps URLs without validating the target URL.
+**Learning:** An attacker could provide a URL that initially looks valid or use a short link that redirects to an internal IP address or internal service, which the server would blindly fetch, bypassing basic validation on the initial input.
+**Prevention:** Always use the `URL` constructor to parse URLs and explicitly validate both the initial URL and *every* subsequent URL extracted from the `Location` header against an allowlist of permitted domains (e.g., `maps.app.goo.gl` and `*.google.com`) and protocols (`http:` and `https:`) before making the fetch request.
