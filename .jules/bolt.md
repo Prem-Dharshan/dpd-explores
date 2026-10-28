@@ -1,0 +1,3 @@
+## 2024-05-24 - React Router useSearchParams Breaks Memoization
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render. Relying on it directly in dependency arrays breaks memoization. Furthermore, immediately invoking a `useCallback` to compute derived state is an anti-pattern that leads to unnecessary computations on every render.
+**Action:** Extract stringified values from search parameters to use as dependencies, and use `useMemo` with `JSON.parse` to obtain stable array references. Use `useMemo` instead of an immediately invoked `useCallback` for synchronously derived state.
