@@ -1,0 +1,4 @@
+## 2024-05-24 - [Fix Server-Side Request Forgery in Maps Enrichment]
+**Vulnerability:** The `/api/enrich` endpoint accepted a user-provided URL and followed its redirects (`redirect: "manual"`) using the `fetch` API without validating the initial URL or any subsequent redirect URLs from the `Location` header against an allowlist.
+**Learning:** This constitutes a Server-Side Request Forgery (SSRF) vulnerability. An attacker could provide a link to a controlled domain which redirects the server to an internal IP or another sensitive internal service, bypassing frontend firewalls.
+**Prevention:** Always validate all URLs (both initial inputs and redirected ones) using the `URL` constructor to enforce expected protocols (`http:`, `https:`) and strictly match hostnames against a known allowlist (e.g., using exact matches or precise regexes) before initiating any network requests.
