@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -141,8 +141,15 @@ export function Dashboard() {
   const dietFilter = searchParams.get("diet") || "all"
   const sortBy = searchParams.get("sort") || "recently_added"
   const cityFilter = searchParams.get("city") || ""
-  const vibeFilter = searchParams.getAll("vibe")
-  const occasionFilter = searchParams.getAll("occasion")
+  const rawVibeFilter = searchParams.getAll("vibe")
+  const rawOccasionFilter = searchParams.getAll("occasion")
+
+  // searchParams.getAll() returns a new array reference on every render, breaking memoization.
+  // We stringify the arrays and use useMemo to preserve reference equality when contents haven't changed.
+  const vibeStr = JSON.stringify(rawVibeFilter)
+  const occasionStr = JSON.stringify(rawOccasionFilter)
+  const vibeFilter = useMemo(() => JSON.parse(vibeStr), [vibeStr])
+  const occasionFilter = useMemo(() => JSON.parse(occasionStr), [occasionStr])
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -186,7 +193,7 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
+  const displayedPlaces = useMemo(() => {
     let result = [...places]
 
     if (search) {
@@ -205,8 +212,8 @@ export function Dashboard() {
     if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
     if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
     if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v: string) => p.vibe.includes(v as never)))
+    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o: string) => p.occasion.includes(o as never)))
 
     // Sort
     if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
@@ -219,9 +226,7 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, search, visited, typeFilter, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {
@@ -480,7 +485,7 @@ export function Dashboard() {
                             const next = new URLSearchParams(searchParams)
                             if (active) {
                               next.delete("vibe")
-                              vibeFilter.filter((x) => x !== v).forEach((x) => next.append("vibe", x))
+                              vibeFilter.filter((x: string) => x !== v).forEach((x: string) => next.append("vibe", x))
                             } else {
                               next.append("vibe", v)
                             }
