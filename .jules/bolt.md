@@ -1,0 +1,3 @@
+## 2023-10-30 - Fix memoization breakage caused by useSearchParams
+**Learning:** `searchParams.getAll()` from `react-router-dom` returns a new array reference on every render, even if the URL hasn't changed. This breaks downstream memoization hooks (`useMemo`, `useCallback`) that depend on these arrays, causing expensive re-computations (like filtering/sorting large lists) to run on every render.
+**Action:** When extracting arrays from search parameters using `getAll()`, stringify the result (e.g. `JSON.stringify(rawArray)`) to create a primitive string representation, then use `useMemo(() => JSON.parse(arrStr), [arrStr])` to derive a stable array reference before passing it to downstream dependencies.
