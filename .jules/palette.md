@@ -1,0 +1,3 @@
+## 2024-10-30 - Add keyboard accessibility to semantic img tag acting as button
+**Learning:** Found a recurring pattern where non-semantic elements like `img` tags are used as buttons (e.g., user avatars for signing out) without proper keyboard navigation support, missing `role="button"`, `tabIndex`, and `onKeyDown` handlers for Enter/Space, alongside `focus-visible` classes.
+**Action:** When non-semantic elements like `img` are used for interaction, explicitly ensure full keyboard accessibility by setting `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (handling Enter and Space, preventing default on Space), and `focus-visible` utility classes (e.g. `focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none`) for visual focus.
