@@ -1,0 +1,3 @@
+## 2024-05-14 - Add ARIA labels and focus rings to icon-only buttons
+**Learning:** Icon-only controls (like carousel arrows, indicator dots, and modal close buttons) lacked `aria-label` attributes and keyboard focus styling (`focus-visible:ring-2 focus-visible:outline-none`), hindering screen reader usage and keyboard accessibility. For controls overlaid on images, using `focus-visible:ring-surface` provides necessary contrast against dynamic backgrounds.
+**Action:** Always verify keyboard focusability (with explicit focus rings) and screen reader descriptions for non-text UI elements. Use `focus-visible:ring-surface` for overlay elements and `focus-visible:ring-accent` for standard UI controls.
