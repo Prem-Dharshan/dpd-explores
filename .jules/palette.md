@@ -1,0 +1,3 @@
+## 2024-05-19 - Add missing ARIA labels for icon-only buttons
+**Learning:** Found a recurring accessibility issue where small icon-only UI controls (e.g. carousel arrows, "open in maps" links, "clear search" X buttons, modal close buttons) omitted explicit `aria-label` attributes. Screen readers would announce these inconsistently, leaving users unaware of their purpose.
+**Action:** Implemented a standard practice of ensuring *every* `button` and `a` tag lacking descriptive internal text explicitly includes an `aria-label` to provide context (e.g., `aria-label="Previous photo"` or `aria-label="Clear mood search"`).
