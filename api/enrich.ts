@@ -19,14 +19,42 @@ const FIELDS = [
   "websiteUri",
 ].join(",")
 
+/** Validate that a URL is a secure Google Maps URL */
+function isValidGoogleMapsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== "https:" && url.protocol !== "http:") return false
+
+    const hostname = url.hostname
+    const isGoogleMaps =
+      hostname === "maps.app.goo.gl" ||
+      hostname === "g.page" ||
+      hostname.endsWith(".google.com") ||
+      /^((www|maps|consent)\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(hostname)
+
+    return isGoogleMaps
+  } catch {
+    return false
+  }
+}
+
 /** Follow redirects (maps.app.goo.gl short links) to the full Maps URL */
 async function expandUrl(url: string): Promise<string> {
+  if (!isValidGoogleMapsUrl(url)) {
+    throw new Error("Invalid Google Maps URL")
+  }
+
   let current = url
   for (let i = 0; i < 5; i++) {
     const r = await fetch(current, { method: "GET", redirect: "manual" })
     const loc = r.headers.get("location")
     if (!loc) break
-    current = new URL(loc, current).toString()
+
+    const nextUrl = new URL(loc, current).toString()
+    if (!isValidGoogleMapsUrl(nextUrl)) {
+      throw new Error("Invalid redirect URL")
+    }
+    current = nextUrl
   }
   return current
 }
