@@ -66,8 +66,9 @@ function TagChip({
       {label.replace(/_/g, " ")}
       {onRemove && (
         <button
+          aria-label="Remove tag"
           onClick={onRemove}
-          className="opacity-50 hover:opacity-100 transition-opacity ml-0.5"
+          className="opacity-50 hover:opacity-100 transition-opacity ml-0.5 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded"
         >
           <X className="w-3 h-3" />
         </button>
@@ -448,13 +449,14 @@ export function Flashcard() {
                           className="h-7 px-2 rounded-full border border-accent bg-surface text-[11px] text-ink outline-none w-28"
                           placeholder="Add tag..."
                         />
-                        <button onClick={() => addTag(field)} className="text-accent"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setAddingField(null)} className="text-ink-tertiary"><X className="w-3.5 h-3.5" /></button>
+                        <button aria-label="Approve tag" onClick={() => addTag(field)} className="text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded"><Check className="w-3.5 h-3.5" /></button>
+                        <button aria-label="Cancel adding tag" onClick={() => setAddingField(null)} className="text-ink-tertiary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none rounded"><X className="w-3.5 h-3.5" /></button>
                       </div>
                     ) : (
                       <button
+                        aria-label="Add tag"
                         onClick={() => setAddingField(field)}
-                        className="h-7 w-7 rounded-full border border-dashed border-border-strong flex items-center justify-center text-ink-tertiary hover:border-accent hover:text-accent transition-colors"
+                        className="h-7 w-7 rounded-full border border-dashed border-border-strong flex items-center justify-center text-ink-tertiary hover:border-accent hover:text-accent transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
