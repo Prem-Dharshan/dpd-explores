@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid `useCallback` for immediately invoked derived state]
+**Learning:** React Router's `useSearchParams()[0].getAll()` returns a new array reference on every render, which breaks downstream memoization. Using `useCallback` and then immediately calling it on every render for expensive synchronous data processing (like filtering and sorting large lists) provides zero performance benefit and actually adds overhead.
+**Action:** Extract stringified arrays (`JSON.stringify(rawArray)`) and use them as dependencies for `useMemo` when working with `searchParams.getAll()`. Always use `useMemo` directly for synchronously derived state instead of `useCallback` to prevent unnecessary `O(N)` and `O(N log N)` computations on unrelated re-renders.
