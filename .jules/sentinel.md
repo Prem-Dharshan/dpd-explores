@@ -1,0 +1,4 @@
+## 2024-05-24 - Fix SSRF and Open Redirect in Google Maps URL expansion
+**Vulnerability:** A manual redirect loop (`redirect: "manual"`) in `api/enrich.ts` followed the `Location` header to expand URLs without validating if the new URL pointed to a safe domain, allowing an attacker to supply a seemingly safe URL that redirects to internal IP addresses or malicious domains (SSRF/Open Redirect bypass).
+**Learning:** When manually following redirects using `fetch`, not only the initial URL but EVERY subsequent URL extracted from the `Location` header must be re-validated against an allowlist of domains and protocols to prevent SSRF bypasses.
+**Prevention:** Always use the `URL` constructor (`new URL()`) to parse URLs safely, explicitly validate protocols (`http:`, `https:`), and use strict hostname matching (e.g., precise regexes for subdomains/regional TLDs) before any `fetch` call.
