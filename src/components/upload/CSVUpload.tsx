@@ -228,7 +228,8 @@ export function CSVUpload({ userId, onSuccess, onError }: Props) {
           </div>
           <button
             onClick={() => setFile(null)}
-            className="text-ink-tertiary hover:text-ink transition-colors"
+            aria-label="Remove file"
+            className="text-ink-tertiary hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
           >
             <X className="w-4 h-4" />
           </button>

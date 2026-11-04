@@ -1,0 +1,3 @@
+## 2024-06-25 - Accessibility of Icon-Only Buttons Over Dynamic Backgrounds
+**Learning:** Carousel image controls and dot indicators are often icon-only without proper ARIA labels. Additionally, applying a standard focus ring might not be visible depending on the underlying image colors.
+**Action:** Always add `aria-label` to icon-only buttons (like `aria-label="Previous photo"` or `aria-label="Close"`). When the button is overlaid on dynamic backgrounds like images, use `focus-visible:ring-surface` (the surface color instead of accent) to ensure the focus ring provides high contrast. Make sure to round out focus rings appropriately with `rounded-sm` or similar based on the element shape.
