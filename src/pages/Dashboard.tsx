@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -141,8 +141,11 @@ export function Dashboard() {
   const dietFilter = searchParams.get("diet") || "all"
   const sortBy = searchParams.get("sort") || "recently_added"
   const cityFilter = searchParams.get("city") || ""
-  const vibeFilter = searchParams.getAll("vibe")
-  const occasionFilter = searchParams.getAll("occasion")
+  const vibeFilterStr = JSON.stringify(searchParams.getAll("vibe"))
+  const vibeFilter = useMemo(() => JSON.parse(vibeFilterStr), [vibeFilterStr]) as string[]
+
+  const occasionFilterStr = JSON.stringify(searchParams.getAll("occasion"))
+  const occasionFilter = useMemo(() => JSON.parse(occasionFilterStr), [occasionFilterStr]) as string[]
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -186,27 +189,44 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
-    let result = [...places]
+  const displayedPlaces = useMemo(() => {
+    const result = places.filter((p) => {
+      // 1. Search
+      if (search) {
+        const q = search.toLowerCase()
+        if (!(
+          p.name.toLowerCase().includes(q) ||
+          p.cuisine_type?.toLowerCase().includes(q) ||
+          p.area?.toLowerCase().includes(q) ||
+          p.city?.toLowerCase().includes(q) ||
+          p.notes?.toLowerCase().includes(q) ||
+          p.vibe.some((v) => v.includes(q))
+        )) {
+          return false
+        }
+      }
 
-    if (search) {
-      const q = search.toLowerCase()
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.cuisine_type?.toLowerCase().includes(q) ||
-        p.area?.toLowerCase().includes(q) ||
-        p.city?.toLowerCase().includes(q) ||
-        p.notes?.toLowerCase().includes(q) ||
-        p.vibe.some((v) => v.includes(q))
-      )
-    }
-    if (visited === "visited") result = result.filter((p) => p.visited)
-    if (visited === "wishlist") result = result.filter((p) => !p.visited)
-    if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
-    if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
-    if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+      // 2. Visited
+      if (visited === "visited" && !p.visited) return false
+      if (visited === "wishlist" && p.visited) return false
+
+      // 3. Type
+      if (typeFilter && p.place_type !== typeFilter) return false
+
+      // 4. Diet
+      if (dietFilter !== "all" && p.diet_type !== dietFilter) return false
+
+      // 5. City
+      if (cityFilter && p.city?.toLowerCase() !== cityFilter.toLowerCase()) return false
+
+      // 6. Vibe
+      if (vibeFilter.length && !vibeFilter.some((v) => p.vibe.includes(v as never))) return false
+
+      // 7. Occasion
+      if (occasionFilter.length && !occasionFilter.some((o) => p.occasion.includes(o as never))) return false
+
+      return true
+    })
 
     // Sort
     if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
@@ -219,9 +239,7 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+  }, [places, search, visited, dietFilter, cityFilter, typeFilter, vibeFilter, occasionFilter, sortBy])
 
   // Mood recommender
   const handleMoodSearch = async () => {

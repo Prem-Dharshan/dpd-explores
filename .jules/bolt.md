@@ -1,0 +1,3 @@
+## 2024-11-05 - Dashboard Filtering Optimization
+**Learning:** `useSearchParams()[0].getAll()` returns a new array reference on every render in React Router, which silently breaks dependency arrays for `useCallback` and `useMemo`. Also, using immediately invoked `useCallback` for derived state is an anti-pattern compared to `useMemo`. Lastly, chaining multiple `.filter()` calls iterates the array multiple times (O(m*n)) instead of a single pass (O(n)).
+**Action:** Extract the stringified array values and use `useMemo` to preserve reference equality. Use `useMemo` directly for derived state like filtered lists. Combine multiple `.filter()` conditions into a single pass to improve CPU usage on large datasets.
