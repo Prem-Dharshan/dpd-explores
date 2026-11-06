@@ -3,7 +3,7 @@
  * Place cards grid with filters, sort, search, and mood recommender
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useSession } from "@/hooks/useSession"
 import { signOut } from "@/lib/auth-client"
@@ -144,6 +144,10 @@ export function Dashboard() {
   const vibeFilter = searchParams.getAll("vibe")
   const occasionFilter = searchParams.getAll("occasion")
 
+  // Extract stringified versions to prevent breaking memoization
+  const vibeFilterStr = JSON.stringify(vibeFilter)
+  const occasionFilterStr = JSON.stringify(occasionFilter)
+
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
     if (value) next.set(key, value)
@@ -186,27 +190,40 @@ export function Dashboard() {
   }, [user, navigate])
 
   // Filter + sort
-  const filtered = useCallback(() => {
-    let result = [...places]
+  const displayedPlaces = useMemo(() => {
+    // ⚡ Bolt: Single-pass filtering instead of O(m*n) chained .filter()s
+    const q = search.toLowerCase()
 
-    if (search) {
-      const q = search.toLowerCase()
-      result = result.filter((p) =>
+    // Parse memoized stringified filters back to arrays
+    const vibes = JSON.parse(vibeFilterStr) as string[]
+    const occasions = JSON.parse(occasionFilterStr) as string[]
+
+    const result = places.filter((p) => {
+      // Search
+      if (search && !(
         p.name.toLowerCase().includes(q) ||
         p.cuisine_type?.toLowerCase().includes(q) ||
         p.area?.toLowerCase().includes(q) ||
         p.city?.toLowerCase().includes(q) ||
         p.notes?.toLowerCase().includes(q) ||
         p.vibe.some((v) => v.includes(q))
-      )
-    }
-    if (visited === "visited") result = result.filter((p) => p.visited)
-    if (visited === "wishlist") result = result.filter((p) => !p.visited)
-    if (typeFilter) result = result.filter((p) => p.place_type === typeFilter)
-    if (dietFilter !== "all") result = result.filter((p) => p.diet_type === dietFilter)
-    if (cityFilter) result = result.filter((p) => p.city?.toLowerCase() === cityFilter.toLowerCase())
-    if (vibeFilter.length) result = result.filter((p) => vibeFilter.some((v) => p.vibe.includes(v as never)))
-    if (occasionFilter.length) result = result.filter((p) => occasionFilter.some((o) => p.occasion.includes(o as never)))
+      )) return false
+
+      // Visited
+      if (visited === "visited" && !p.visited) return false
+      if (visited === "wishlist" && p.visited) return false
+
+      // Type, Diet, City
+      if (typeFilter && p.place_type !== typeFilter) return false
+      if (dietFilter !== "all" && p.diet_type !== dietFilter) return false
+      if (cityFilter && p.city?.toLowerCase() !== cityFilter.toLowerCase()) return false
+
+      // Vibes & Occasions
+      if (vibes.length > 0 && !vibes.some((v) => p.vibe.includes(v as never))) return false
+      if (occasions.length > 0 && !occasions.some((o) => p.occasion.includes(o as never))) return false
+
+      return true
+    })
 
     // Sort
     if (sortBy === "name_asc") result.sort((a, b) => a.name.localeCompare(b.name))
@@ -219,9 +236,8 @@ export function Dashboard() {
     else if (sortBy === "budget_high_low") result.sort((a, b) => (b.budget_per_person_max || 0) - (a.budget_per_person_max || 0))
 
     return result
-  }, [places, search, visited, dietFilter, cityFilter, vibeFilter, occasionFilter, sortBy])
-
-  const displayedPlaces = filtered()
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  }, [places, search, visited, dietFilter, cityFilter, vibeFilterStr, occasionFilterStr, sortBy, typeFilter])
 
   // Mood recommender
   const handleMoodSearch = async () => {
