@@ -1,0 +1,3 @@
+## 2026-11-06 - [Keyboard Accessibility on Image Backgrounds]
+**Learning:** Standard focus rings (often configured with a theme accent color) can have very poor contrast or become entirely invisible when applied to interactive controls (like carousel arrows and dots) overlaid on dynamic image backgrounds.
+**Action:** When making controls over images accessible via keyboard, explicitly add `focus-visible:ring-surface` (or an equivalent contrasting ring like white/black depending on context) in combination with `focus-visible:outline-none` to ensure the focus state remains highly visible regardless of the image content beneath it.
